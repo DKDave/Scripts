@@ -1,0 +1,25 @@
+# Nightfire (GameCube)
+# Extract textures from .gsh files
+# QuickBMS script by Dave, 2020
+
+Endian Big
+
+IDString "SHPG"
+
+Goto 0x08
+Get ENTRIES Long
+
+Math FILE_TABLE = 0x10
+
+For A = 1 To ENTRIES
+	Goto FILE_TABLE
+	GetDString FILENAME 4
+	Get OFFSET Long
+
+	Math FILE_TABLE + 0x08
+Next A
+
+
+
+
+
