@@ -1,0 +1,35 @@
+# ================================================================================
+# Skylanders Giants (Wii)
+# .arc file extract
+# QuickBMS script by Dave, 2019
+# ================================================================================
+
+IDString "IGA\x1A"
+
+Goto 0xC
+Get ENTRIES Long
+Goto 0x1c
+Get NAMES Long
+Set NAME_POS Long NAMES
+
+XMath FILE_TABLE "(ENTRIES * 4) + 0x34"
+
+For A = 1 to ENTRIES
+
+	Goto FILE_TABLE
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC Long
+
+	Goto NAME_POS
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	SavePos NAME_POS
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math FILE_TABLE + 0xc
+
+Next A

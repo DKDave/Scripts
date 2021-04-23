@@ -1,0 +1,34 @@
+# ================================================================================
+# Trapt (aka Kagero: Dark Illusion II) (PS2)
+# .arc file extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+IDString "RPS\x00"
+
+Get ENTRIES Long
+Get DATA_START Long
+Get TEMPNAME basename
+
+Math ENTRY_START = 0x14
+
+For A = 1 To ENTRIES
+	Goto ENTRY_START
+	Get JUNK Long
+	Get SIZE Long
+	Get JUNK Long
+	Get FNAME_OFF Long
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Goto FNAME_OFF
+	Get FILENAME String
+	String FILENAME P "%TEMPNAME%\%FILENAME%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY_START + 0x14
+
+Next A
+
+
+

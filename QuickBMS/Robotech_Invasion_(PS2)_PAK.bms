@@ -1,0 +1,24 @@
+# ================================================================================
+# Robotech: Invasion (PS2)
+# PAK extract
+# QuickBMS script by Dave, 2019
+# ================================================================================
+
+Get ENTRIES Long
+Math ENTRY_START = 0x800
+
+For A = 1 to ENTRIES
+	Goto ENTRY_START
+	Get FILENAME String
+	Math ENTRY_START + 0x28
+	Goto ENTRY_START
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY_START + 0x08
+Next A
+
+

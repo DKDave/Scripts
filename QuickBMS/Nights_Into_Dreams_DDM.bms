@@ -1,0 +1,36 @@
+# ================================================================================
+# Nights Into Dreams
+# DDM extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+
+FindLoc DSFN_OFFSET String "DSFN" 0 ""
+
+Goto DSFN_OFFSET
+Get JUNK Long
+Get CHUNK_SIZE Long
+Get JUNK Short
+Get FILE_COUNT Long
+Get JUNK Short
+
+For A = 1 To FILE_COUNT
+	Get FILENAME String
+	String FILENAME - "E:\"
+	PutArray 0 A FILENAME
+Next A
+
+XMath DSCK_OFFSET "DSFN_OFFSET + CHUNK_SIZE + 8"
+
+For A = 1 To FILE_COUNT
+	Goto DSCK_OFFSET
+	Get JUNK Long
+	Get CHUNK_SIZE Long
+	Get SIZE Long
+	XMath OFFSET "DSCK_OFFSET + 0x10"
+	GetArray FILENAME 0 A
+
+	Log FILENAME OFFSET SIZE
+
+	XMath DSCK_OFFSET "DSCK_OFFSET + CHUNK_SIZE + 8"
+Next A

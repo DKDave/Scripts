@@ -1,0 +1,29 @@
+# ================================================================================
+# Space Hulk 2 (Sega Saturn)
+# .CAT file extract (audio files)
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Endian Big
+
+Get TEMPNAME basename
+
+Math A = 1
+
+For A
+	FindLoc OFFSET String "FORM" 0 -1
+
+	If OFFSET = -1
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long
+	Get SIZE Long
+	Math SIZE + 8
+
+	String FILENAME P "%TEMPNAME%\%TEMPNAME%_%A%.aiff"
+
+	Log FILENAME OFFSET SIZE
+
+Next A

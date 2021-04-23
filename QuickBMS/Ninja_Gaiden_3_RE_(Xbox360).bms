@@ -1,0 +1,87 @@
+# ================================================================================
+# Ninja Gaiden 3: Razor's Edge (XBox 360)
+# .bin/.lnk extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+# Use this script on the archive_order.bin file
+# Make sure that all of the .lnk files are in the same folder
+
+
+Endian Big
+
+IDString "LFMO"
+
+Get COUNT1 Long
+Get COUNT2 Long
+Get TABLE1_START Long
+Get TABLE2_START Long
+Get TEXT1 Long
+Get TEXT2 Long
+
+
+# Read archive names into array
+
+Math ENTRY = TABLE1_START
+
+For A = 1 To COUNT1
+	Goto ENTRY
+	Get ARC_NUM Long
+	Get ANAME_OFF Long
+	Goto ANAME_OFF
+	Get FILENAME String
+	String FILENAME - ".cpp"
+	String FILENAME + ".lnk"
+
+	PutArray 0 ARC_NUM FILENAME
+
+	Math ENTRY + 8
+Next A
+
+
+# Read files
+
+Math ENTRY = TABLE2_START
+
+For A = 1 To COUNT2
+	Goto ENTRY
+	Get ARC_NUM Long
+	Get ARC_FILE Long
+	Get FNAME_OFF Long
+	GetArray ARC_NAME 0 ARC_NUM
+	Goto FNAME_OFF
+	Get FILENAME String
+
+	Open FDSE ARC_NAME 1
+	XMath ARC_ENTRY "(ARC_FILE * 0x20) + 0x20"						# offset of file info in archive
+
+	Goto ARC_ENTRY 1
+	Get JUNK Long 1
+	Get OFFSET Long 1
+	Get JUNK Long 1
+	Get TOTAL_SIZE Long 1
+	Get JUNK Long 1
+	Get TOTAL_ZSIZE Long 1
+
+	Log MEMORY_FILE 0 0
+
+	For B
+		Goto OFFSET 1
+		Get ZSIZE Long 1
+		Math OFFSET + 4
+		If ZSIZE > 0
+			Append
+			CLog MEMORY_FILE OFFSET ZSIZE 0x10000000 1				# uncompressed size of each part isn't stored
+			Append
+		Else
+			Break
+		Endif
+		Math OFFSET + ZSIZE
+	Next B
+
+	Get TEMP_SIZE asize -1
+	Log FILENAME 0 TEMP_SIZE -1
+
+	Math ENTRY + 12
+Next A
+
