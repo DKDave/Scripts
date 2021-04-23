@@ -1,0 +1,26 @@
+# ================================================================================
+# Devil May Cry 4 (PC)
+# .arc extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+ComType XMEMLZX
+
+IDString "ARC\x00"
+
+Get JUNK Short
+Get ENTRIES Short
+
+For A = 1 to ENTRIES
+
+	GetDString FILENAME 0x40
+	Get JUNK Long
+	Get SIZE Long
+	Get JUNK Long
+	Get OFFSET Long
+
+	CLog FILENAME OFFSET SIZE 0x10000000
+
+Next A
+
+
