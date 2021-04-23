@@ -1,0 +1,35 @@
+# ================================================================================
+# Midnight Club: LA (XBox 360/PS3)
+# CSR file decompression
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+
+Get FILE_ID Long
+
+If FILE_ID = 0x52534306						# PS3
+	Comtype zlib
+
+	Get TEMPNAME basename
+	Get ZSIZE asize
+	Math ZSIZE - 12
+
+	String FILENAME P "%TEMPNAME%_dec"
+
+	CLog FILENAME 0x0c ZSIZE 0x2000000
+
+Endif
+
+
+If FILE_ID = 0x52534305						# XBOX360
+	Comtype xmemlzx
+
+	Get TEMPNAME basename
+	Get ZSIZE asize
+	Math ZSIZE - 0x14
+
+	String FILENAME P "%TEMPNAME%_dec"
+
+	CLog FILENAME 0x14 ZSIZE 0x2000000
+
+Endif

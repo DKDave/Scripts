@@ -1,0 +1,43 @@
+# ================================================================================
+# Reboot (PS1)
+# ROB.BIG extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+# Input file is ROB.BIG, output files are .MUS that can be played in Foobar/vgmstream
+
+
+Get FILE_END asize
+Get TEMPNAME basename
+Math BLACK_START = 0
+Math FILE_COUNT = 0
+
+For
+	If BLOCK_START = FILE_END
+		Break
+	Endif
+
+	Goto BLOCK_START
+	GetDString BLOCK_NAME 4
+	Get BLOCK_SIZE Long
+
+	If BLOCK_NAME = "SCEl"						# end block for each file
+		Append
+		Log MEMORY_FILE BLOCK_START BLOCK_SIZE
+		Append
+
+		String FILENAME P "REBOOT_%FILE_COUNT%.mus"			# write the completed file
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+		Math FILE_COUNT + 1
+		Log MEMORY_FILE 0 0					# Reset memory file for next file
+	Else
+		Append
+		Log MEMORY_FILE BLOCK_START BLOCK_SIZE
+		Append
+
+	Endif
+
+	Math BLOCK_START + BLOCK_SIZE
+Next
+

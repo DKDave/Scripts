@@ -1,0 +1,67 @@
+# ================================================================================
+# Dino Crisis 3 (XBOX)
+# XSP extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+# This script extracts the audio from the XSP files and creates playable .wav files
+
+
+Goto 0xc
+Get ENTRIES Long
+Get FILE_TABLE Long
+Get DATA_START Long
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long
+PutVarChr MEMORY_FILE 8 0x45564157 Long
+PutVarChr MEMORY_FILE 0x0c 0x20746d66 Long
+PutVarChr MEMORY_FILE 0x10 0x14 Long
+PutVarChr MEMORY_FILE 0x28 0x61746164 Long
+
+
+For A = 1 To ENTRIES
+	Goto FILE_TABLE
+	GetDString FILENAME 0x20
+	String FILENAME P "%TEMPNAME%\%FILENAME%"
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get JUNK Long
+	Get SIZE Long
+	Get XB_TYPE Short
+	Get XB_CHANNELS Short
+	Get XB_RATE Long
+	Get XB_BRATE Long
+	Get XB_BLOCK Short
+	Get XB_BITS Short
+	Get XB_EXTRA1 Short
+	Get XB_EXTRA2 Short
+
+	XMath RIFF_SIZE "SIZE + 40"
+
+	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+	PutVarChr MEMORY_FILE 0x14 XB_TYPE Short
+	PutVarChr MEMORY_FILE 0x16 XB_CHANNELS Short
+	PutVarChr MEMORY_FILE 0x18 XB_RATE Long
+	PutVarChr MEMORY_FILE 0x1c XB_BRATE Long
+	PutVarChr MEMORY_FILE 0x20 XB_BLOCK Short
+	PutVarChr MEMORY_FILE 0x22 XB_BITS Short
+	PutVarChr MEMORY_FILE 0x24 XB_EXTRA1 Short
+	PutVarChr MEMORY_FILE 0x26 XB_EXTRA2 Short
+	PutVarChr MEMORY_FILE 0x2c SIZE Long
+
+	Log FILENAME 0 48 -1
+
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math FILE_TABLE + 0x40
+Next A
+
+
+
+

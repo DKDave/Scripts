@@ -1,0 +1,44 @@
+# ================================================================================
+# Dishonored 2 (PC)
+# .PCK extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+# This script extracts the audio files and creates .wem files playable in Foobar/VGMStream
+
+
+IDString "AKPK"
+
+Goto 0x0c
+Get TEXT_SIZE Long
+
+XMath BKHD_HEADER "TEXT_SIZE + 0x1c"
+
+Goto BKHD_HEADER
+Get BKHD_COUNT Long
+
+Get FOLDER_NAME basename
+
+XMath FILE_TABLE "(BKHD_COUNT * 20) + BKHD_HEADER + 4"
+
+Goto FILE_TABLE
+Get ENTRIES Long
+
+For A = 1 to ENTRIES
+
+	Get MISC1 Long
+	Get MISC2 Long
+	Get SIZE Long
+	Get OFFSET Long
+	Get MISC3 Long
+
+	String FILENAME P "%FOLDER_NAME%\File_%A%.wem"
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+
+
+
+

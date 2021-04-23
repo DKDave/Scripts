@@ -1,0 +1,37 @@
+# ================================================================================
+# Wipeout 3 (PSX)
+# PBP Extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+# use wipeout_tool to extract the .cmp files
+
+
+Get TEMPNAME basename
+
+Set MEMORY_FILE binary "\x01\x00\x00\x00\x00\x00\x00\x00"
+
+Goto 0x50
+Get ENTRIES Long
+
+Goto 0x58
+
+For A = 0 < ENTRIES
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+
+	String FILENAME P "%TEMPNAME%\%TEMPNAME%_%A%.cmp"
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else								# create fake CMP header for 1 file
+		PutVarChr MEMORY_FILE 4 SIZE Long
+		Log FILENAME 0 8 -1
+		Append
+		Log FILENAME OFFSET ZSIZE
+		Append
+	 Endif
+
+Next A
+

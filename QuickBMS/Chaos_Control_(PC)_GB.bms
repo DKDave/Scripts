@@ -1,0 +1,28 @@
+# ================================================================================
+# Chaos Control (PC, 1995)
+# CHAOS.GB extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+IDString "\x01\x55\x42\x41"
+
+Get DIR_END Long
+
+Math FILE_ENTRY = 0x08
+
+For
+	If FILE_ENTRY = DIR_END
+		Break
+	Endif
+
+	Goto FILE_ENTRY
+	GetDString FILENAME 0x0d
+	Get OFFSET Long
+	Get SIZE Long
+	Get JUNK Long							# possibly uncompressed size (not used in this game)
+
+	Log FILENAME OFFSET SIZE
+
+	Math FILE_ENTRY + 0x19
+
+Next

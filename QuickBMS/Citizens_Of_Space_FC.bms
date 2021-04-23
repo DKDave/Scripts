@@ -1,0 +1,28 @@
+# ================================================================================
+# Citizens Of Space
+# music.fc extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+Goto -4
+Get ENTRIES Long
+Get FC_SIZE asize
+Get TEMPNAME basename
+
+XMath TABLE_SIZE "ENTRIES * 0x14"
+XMath TABLE "FC_SIZE - TABLE_SIZE - 4"
+
+For A = 1 To ENTRIES
+	Goto TABLE
+	Get MISC1 Long
+	Get SIZE Long
+	Get OFFSET Long
+
+	String FILENAME P "%TEMPNAME%_%A%.ogg"
+
+	Log FILENAME OFFSET SIZE
+
+	Math TABLE + 0x14
+Next A
+
+

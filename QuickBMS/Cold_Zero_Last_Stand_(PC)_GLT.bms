@@ -1,0 +1,36 @@
+# ================================================================================
+# Cold Zero: The Last Stand (aka Cold Zero: No Mercy) (PC, 2003)
+# .glt extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+Comtype LZAH
+
+FindLoc OFFSET String "EndOfFile" 0 ""
+Math OFFSET - 8
+Goto OFFSET
+Get ENTRIES Long
+Get FILE_END asize
+
+XMath ENTRY "FILE_END - (ENTRIES * 0x80)"
+Math ENTRIES - 1							# Final entry isn't a proper file
+
+For A = 1 To ENTRIES
+	Goto ENTRY
+	Get MISC1 Short
+	Get MISC2 Short
+	Get ZSIZE Long
+	Get OFFSET Long
+	Get FILENAME String
+
+	Goto OFFSET
+	GetDString JUNK 12						# "DE ZLock" etc.
+	Get SIZE Long
+	Math ZSIZE - 16
+	Math OFFSET + 16
+
+	CLog FILENAME OFFSET ZSIZE SIZE
+
+	Math ENTRY + 0x80
+Next A
+

@@ -1,0 +1,32 @@
+# ================================================================================
+# Star Wars: The Clone Wars (XBOX)
+# Extract files from data.zwp archive
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+IDString "NORK"
+
+Goto 0x10
+Get ENTRIES Long
+Get FILE_TABLE Long
+
+Goto FILE_TABLE
+
+For A = 1 To ENTRIES
+	Get MISC1 Long
+	Get TEXT_LEN Byte
+	GetDString FILENAME TEXT_LEN
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+Next A
+
+
+

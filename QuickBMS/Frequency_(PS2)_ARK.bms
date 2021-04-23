@@ -1,0 +1,59 @@
+# ================================================================================
+# Frequency (PS2)
+# .ARK archive extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+Comtype gzip
+
+IDString "ARK\x00"
+
+Goto 0x08
+Get FILE_TABLE Long
+Get ENTRIES Long
+Get FOLDER_TABLE Long
+Get FOLDER_ENTRIES Long
+Get NAMES Long
+
+Math FOLDER_ENTRIES - 1
+
+For A = 0 To FOLDER_ENTRIES
+	Goto FOLDER_TABLE
+	Get MISC1 Long
+	Get FNAME_OFF Long
+	Goto FNAME_OFF
+	Get FNAME String
+
+	PutArray 0 A FNAME
+
+	Math FOLDER_TABLE + 8
+Next A
+
+
+For A = 1 To ENTRIES
+	Goto FILE_TABLE
+	Get MISC1 Long
+	Get FILENAME_OFF Long
+	Get FOLDER_ID Short
+	GetArray FOLDER_NAME 0 FOLDER_ID
+
+	Get DATA_OFFSET Short
+	Get START_BLOCK Long
+	Get ZSIZE Long
+	Get SIZE Long
+	XMath OFFSET "(START_BLOCK * 0x800) + DATA_OFFSET"
+
+	Goto FILENAME_OFF
+	Get FILENAME String
+	String FILENAME P "%FOLDER_NAME%/%FILENAME%"
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		String FILENAME - ".gz"
+		CLog FILENAME OFFSET ZSIZE ZSIZE
+	Endif
+
+	Math FILE_TABLE + 0x18
+Next A
+

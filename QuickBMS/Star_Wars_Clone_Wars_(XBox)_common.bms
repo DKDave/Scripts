@@ -1,0 +1,63 @@
+# ================================================================================
+# Clone Wars (XBOX)
+# Extract audio files from common.xwb and add a RIFF/WAVE header
+# By Dave, 2020
+# ================================================================================
+
+IDString "WBND"
+
+Open FDSE "sound.inc" 1
+
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long
+PutVarChr MEMORY_FILE 8 0x45564157 Long
+PutVarChr MEMORY_FILE 12 0x20746d66 Long
+PutVarChr MEMORY_FILE 16 0x14 Long
+PutVarChr MEMORY_FILE 20 0x69 Short
+PutVarChr MEMORY_FILE 22 0x01 Short
+PutVarChr MEMORY_FILE 28 0x1588 Long
+PutVarChr MEMORY_FILE 32 0x24 Short
+PutVarChr MEMORY_FILE 34 0x04 Short
+PutVarChr MEMORY_FILE 36 0x00400002 Long
+PutVarChr MEMORY_FILE 40 0x61746164 Long
+
+Goto 0xc
+Get ENTRIES Long
+
+Math FILE_TABLE = 0x50
+XMath DATA_START "(ENTRIES * 0x14) + 0x50"
+
+For A = 1 To ENTRIES
+	Goto FILE_TABLE
+	Get INFO Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET + DATA_START
+
+	XMath SAMP_RATE "(INFO & 0xFFFFFFE0) >> 5"
+
+	PutVarChr MEMORY_FILE 24 SAMP_RATE Long
+	PutVarChr MEMORY_FILE 44 SIZE Long
+	XMath RIFF_SIZE "SIZE + 40"
+	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+
+	GetCT FILENAME String 0x0a 1
+	String FILENAME < 5
+	String FILENAME % ","
+	String FILENAME > 1
+	String FILENAME + ".wav"
+
+	Log FILENAME 0 48 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math FILE_TABLE + 0x14
+Next A
+
+
+

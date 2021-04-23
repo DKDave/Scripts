@@ -1,0 +1,71 @@
+# ================================================================================
+# Spiderman (XBOX, 2002)
+# XSH/XSD extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Open FDDE "XSD" 1
+
+Get TEMPNAME basename
+
+# Setup XBOX ADPCM RIFF/WAVE header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long
+PutVarChr MEMORY_FILE 8 0x45564157 Long
+PutVarChr MEMORY_FILE 12 0x20746d66 Long
+PutVarChr MEMORY_FILE 16 0x14 Long
+PutVarChr MEMORY_FILE 40 0x61746164 Long
+
+Goto 0x8
+Get ENTRIES Long
+Math FILE_TABLE = 0xc
+
+For A = 1 To ENTRIES
+	Goto FILE_TABLE
+	GetDString FILENAME 0x20
+	String FILENAME P "%FILENAME%.wav"					# put all files in same folder (to reduce duplicates)
+#	String FILENAME P "%TEMPNAME%\%FILENAME%.wav"			# put all files in separate folders
+	Get JUNK Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	If SIZE <> 0
+		GetDString JUNK 0x20
+		Get AUDIO_TYPE Short
+		Get CHANNELS Short
+		Get SAMP_RATE Long
+		Get BYTE_RATE Long
+		Get BLOCK_ALIGN Short
+		Get BITS Short
+		Get EXTRA1 Short
+		Math EXTRA2 = 0x40
+
+		XMath RIFF_SIZE "SIZE + 8"
+
+# Write RIFF/WAVE header information
+
+		PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+		PutVarChr MEMORY_FILE 20 AUDIO_TYPE Short
+		PutVarChr MEMORY_FILE 22 CHANNELS Short
+		PutVarChr MEMORY_FILE 24 SAMP_RATE Long
+		PutVarChr MEMORY_FILE 28 BYTE_RATE Long
+		PutVarChr MEMORY_FILE 32 BLOCK_ALIGN Short
+		PutVarChr MEMORY_FILE 34 BITS Short
+		PutVarChr MEMORY_FILE 36 EXTRA1 Short
+		PutVarChr MEMORY_FILE 38 EXTRA2 Short
+		PutVarChr MEMORY_FILE 44 SIZE Long
+
+		Log FILENAME 0 48 -1
+		Append
+		Log FILENAME OFFSET SIZE 1
+		Append
+	Endif
+
+	Math FILE_TABLE + 0x60
+Next A
+
+
+
