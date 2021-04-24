@@ -1,0 +1,27 @@
+# ================================================================================
+# Attack On Titan 2
+# BGM extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+Get TEMPNAME basename
+Math A = 1
+
+For A
+	FindLoc OFFSET String "KOVS" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	Get MISC Long
+	Get SIZE Long
+	Math SIZE + 0x20
+
+	String FILENAME P "%TEMPNAME%_%A%.kovs"
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+

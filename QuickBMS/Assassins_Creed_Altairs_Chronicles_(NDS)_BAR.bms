@@ -1,0 +1,33 @@
+# ================================================================================
+# Assassin's Creed: Altair's Chronicles (DS)
+# .bar extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Get ENTRIES Short
+XMath DATA_START "(ENTRIES * 4) + 2"
+Math ENTRIES - 1
+
+
+Set ENTRY_START Long 2
+
+For A = 1 to ENTRIES
+	Goto ENTRY_START
+
+	Get OFFSET Long
+	Get OFFSET2 Long
+	XMath SIZE "OFFSET2 - OFFSET"
+	Math OFFSET + DATA_START
+
+	String FILENAME = "sounds_"
+	String FILENAME + A
+	String FILENAME + ".wav"
+
+	If SIZE <> 0
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math ENTRY_START + 4
+
+Next A
+

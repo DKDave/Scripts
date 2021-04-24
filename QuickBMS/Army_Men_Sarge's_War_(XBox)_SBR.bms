@@ -1,0 +1,121 @@
+# ================================================================================
+# Army Men: Sarge's War (XBox)
+# SBR extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+# This script extracts the audio and creates playable .wav files
+
+
+Goto 0x8
+Get DATA_START Long
+Get JUNK Long
+Get ENTRIES1 Long
+Get FILE_TABLE1 Long
+Get ENTRIES2 Long
+Get FILE_TABLE2 Long
+Get ENTRIES3 Long
+Get FILE_TABLE3 Long
+
+Get TEMPNAME basename
+
+# Setup XBOX ADPCM RIFF/WAVE header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long					# RIFF
+PutVarChr MEMORY_FILE 8 0x45564157 Long					# WAVE
+PutVarChr MEMORY_FILE 12 0x20746d66 Long					# fmt
+PutVarChr MEMORY_FILE 16 0x14 Long						# fmt size for XBOX ADPCM
+PutVarChr MEMORY_FILE 40 0x61746164 Long					# data
+
+
+# Process table 2
+
+For A = 1 To ENTRIES2
+	Goto FILE_TABLE2
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET + DATA_START
+	Goto OFFSET
+
+	Get AUDIO_TYPE Short						# 0x69 for XBOX ADPCM
+	Get CHANNELS Short
+	Get SAMP_RATE Long
+	Get BYTE_RATE Long
+	Get BLOCK_ALIGN Short
+	Get BITS Short
+	Get EXTRA1 Short
+	Get EXTRA2 Short
+
+	Math OFFSET + 0x14							# actual start of audio data for these files
+	Math SIZE - 0x14
+
+	XMath RIFF_SIZE "SIZE + 40"
+
+	CallFunction Write_WAVE_Header 1
+
+	String FILENAME P "%TEMPNAME%_%A%.wav"
+
+	Log FILENAME 0 48 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math FILE_TABLE2 + 0x10
+Next A
+
+
+# Process table 3
+
+For A = 1 To ENTRIES3
+	Goto FILE_TABLE3
+	Get OFFSET Long
+	Get SIZE Long
+	Get JUNK Long
+	Get JUNK Long
+	Get AUDIO_TYPE Short
+	Get CHANNELS Short
+	Get SAMP_RATE Long
+	Get BYTE_RATE Long
+	Get BLOCK_ALIGN Short
+	Get BITS Short
+	Get EXTRA1 Short
+	Get EXTRA2 Short
+
+	XMath FILENUM "A + ENTRIES2"
+	Math OFFSET + DATA_START
+
+	XMath RIFF_SIZE "SIZE + 40"
+
+	CallFunction Write_WAVE_Header 1
+
+	String FILENAME P "%TEMPNAME%_%FILENUM%.wav"
+
+	Log FILENAME 0 48 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math FILE_TABLE3 + 0x24
+Next A
+
+
+# Function to finalise the information in the WAVE header
+
+StartFunction Write_WAVE_Header
+
+	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+	PutVarChr MEMORY_FILE 20 AUDIO_TYPE Short
+	PutVarChr MEMORY_FILE 22 CHANNELS Short
+	PutVarChr MEMORY_FILE 24 SAMP_RATE Long
+	PutVarChr MEMORY_FILE 28 BYTE_RATE Long
+	PutVarChr MEMORY_FILE 32 BLOCK_ALIGN Short
+	PutVarChr MEMORY_FILE 34 BITS Short
+	PutVarChr MEMORY_FILE 36 EXTRA1 Short
+	PutVarChr MEMORY_FILE 38 EXTRA2 Short
+	PutVarChr MEMORY_FILE 44 SIZE Long
+
+EndFunction
+
