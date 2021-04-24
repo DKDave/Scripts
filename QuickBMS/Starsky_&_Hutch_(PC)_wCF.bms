@@ -1,0 +1,35 @@
+# ================================================================================
+# Starsky & Hutch (PC)
+# .wCF extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+IDString "AFHI"
+Get ENTRIES Long
+Goto 0x28
+Get FILE_ENTRY Long
+Goto 0x34
+Get NAMES_TABLE Long
+Goto 0x3c
+Get DATA_START Long
+
+For A = 1 to ENTRIES
+	Goto FILE_ENTRY
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get NAME_OFFSET Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET + DATA_START
+	Math NAME_OFFSET + NAMES_TABLE
+	Goto NAME_OFFSET
+	Get FILENAME String
+	String FILENAME + ".ogg"
+
+	Log FILENAME OFFSET SIZE
+
+	Math FILE_ENTRY + 0x30
+
+Next A

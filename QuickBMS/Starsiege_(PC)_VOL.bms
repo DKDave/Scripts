@@ -1,0 +1,46 @@
+# ================================================================================
+# Starsiege (PC)
+# .vol extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+IDString " VOL"
+
+Get TEMPNAME basename
+Get FILE_TABLE Long
+
+Goto FILE_TABLE
+GetDString JUNK 20
+Get TEXT_SIZE Long
+SavePos TEXT_DATA
+
+XMath FILE_TABLE "TEXT_DATA + TEXT_SIZE + 4"
+XMath REMAINDER "FILE_TABLE % 2"
+
+If REMAINDER = 1
+	Math FILE_TABLE + 1
+Endif
+
+Goto FILE_TABLE
+Get ENTRIES Long
+SavePos ENTRY
+Math ENTRIES / 0x11
+
+For A = 1 To ENTRIES
+	Goto ENTRY
+	Get JUNK Long
+	Get TEXT_OFF Long
+	Get OFFSET Long
+	Math OFFSET + 8
+	Get SIZE Long
+	Math TEXT_OFF + TEXT_DATA
+	Goto TEXT_OFF
+	Get FILENAME String
+
+	String FILENAME P "%TEMPNAME%\%FILENAME%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x11
+Next A
+
