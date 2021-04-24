@@ -1,0 +1,64 @@
+# ================================================================================
+# MechAssault 1 (XBox)
+# .d1Bank extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Goto 0x08
+Get ENTRIES Long
+Goto 0x14
+Get FILE_TABLE Long
+Goto 0x18
+Get DATA_OFFSET Long
+
+Get TEMPNAME filename
+Get FILE_PREFIX basename
+
+If TEMPNAME = "SFX.d1Bank"
+	Math OFFSET_FLAG = 1
+Else
+	Math OFFSET_FLAG = 0
+Endif
+
+SET MEMORY_FILE binary "\x00\x00\x00\x00\x00\x00\x00\x00"
+
+
+For A = 1 to ENTRIES
+	Goto FILE_TABLE
+	Get JUNK Long
+	Get OFFSET Long
+	Get JUNK Long
+	Get JUNK Long
+	Get SIZE Long
+	Get JUNK Long
+	Get JUNK Long
+	Get AUDIO_TYPE Short
+	Get CHANNELS Short
+	Get SAMP_RATE Long
+
+	If OFFSET_FLAG = 1
+		Math OFFSET + DATA_OFFSET
+	Endif
+
+	If AUDIO_TYPE = 1
+		String FILE_EXT = ".pcm16.vgmstream"
+	Elif AUDIO_TYPE = 0x69
+		String FILE_EXT = ".xbox.vgmstream"
+	Else
+		String FILE_EXT = ".unknown"
+	Endif
+
+	String FILENAME P "%FILE_PREFIX%_%A%%FILE_EXT%"
+
+	PutVarChr MEMORY_FILE 0 SAMP_RATE Long
+	PutVarChr MEMORY_FILE 4 CHANNELS Long
+
+	Log FILENAME 0 8 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math FILE_TABLE + 0x30
+
+Next A
+

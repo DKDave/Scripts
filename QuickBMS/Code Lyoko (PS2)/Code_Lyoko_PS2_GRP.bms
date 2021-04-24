@@ -1,0 +1,46 @@
+# ================================================================================
+# Code Lyoko
+# .GRP extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Get TEMPNAME basename
+Get ENTRIES Short
+Get JUNK Short
+
+Set MEMORY_FILE binary "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+Math ENTRIES / 2
+
+Math TABLE1 = 0x04
+XMath TABLE2 "TABLE1 + (ENTRIES * 8)"
+
+For A = 1 To ENTRIES
+	Goto TABLE1
+	Get JUNK Long
+	Get AUDIO_INFO_OFFSET Long
+	Goto TABLE2
+	Get SIZE Long
+	Get OFFSET Long
+	Goto AUDIO_INFO_OFFSET
+	Get JUNK Long
+	Get JUNK Long
+	Get CHANNELS Long
+	Get SAMP_RATE Long
+	Get INTERLEAVE Long
+
+	PutVarChr MEMORY_FILE 0 SAMP_RATE Long
+	PutVarChr MEMORY_FILE 4 CHANNELS Long
+	PutVarChr MEMORY_FILE 8 INTERLEAVE Long
+
+	String FILENAME P "%TEMPNAME%_%A%.vgmstream"
+
+	Log FILENAME 0 12 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math TABLE1 + 8
+	Math TABLE2 + 8
+Next A
+

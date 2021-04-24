@@ -1,0 +1,46 @@
+# ================================================================================
+# Grandia (PS1)
+# IDX/STZ extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Open FDDE "stz" 1
+
+Get ENTRIES asize 0
+Math ENTRIES / 4
+
+Set FILE_ENTRY Long 0
+Get TEMPNAME basename
+
+For A = 1 to ENTRIES
+	Goto FILE_ENTRY
+	Get STZ_OFFSET Long
+
+	If STZ_OFFSET <> 0xFFFFFFFF
+		XMath STZ_OFFSET "(STZ_OFFSET & 0xFFFFF) * 0x800"
+		Goto STZ_OFFSET 1
+		Get CHANNELS Long 1
+		Get SAMP_RATE Long 1
+		Get JUNK Long 1
+		Get JUNK Long 1
+		Get JUNK Long 1
+		Get JUNK Long 1
+		Get SIZE Long 1
+		XMath OFFSET "STZ_OFFSET + 0x800"
+		String FILENAME = TEMPNAME
+		String FILENAME + "_"
+		String FILENAME + A
+		String FILENAME + ".vgmstream"
+		Set MEMORY_FILE binary "\x00\x00\x00\x00\x00\x00\x00\x00"
+		PutVarChr MEMORY_FILE 0 SAMP_RATE Long
+		PutVarChr MEMORY_FILE 4 CHANNELS Long
+
+		Log FILENAME 0 8 -1
+		Append
+		Log FILENAME OFFSET SIZE 1
+		Append
+	Endif
+
+	Math FILE_ENTRY + 4
+Next A
+

@@ -1,0 +1,43 @@
+# ================================================================================
+# Black (PS2)
+# SSH / BKS audio extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Open FDDE "BKS" 1
+
+Goto 0x10
+Get INTERLEAVE Long
+Get JUNK Byte
+Get CHANNELS Byte
+Get ENTRIES Short
+Get FILE_TABLE Long
+
+Get TEMPNAME basename
+
+SET MEMORY_FILE binary "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+Goto FILE_TABLE
+
+For A = 1 To ENTRIES
+	Get OFFSET Short
+	Get SIZE Short
+	Get SAMP_RATE Long
+
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+
+	String FILENAME P "%TEMPNAME%_%A%.vgmstream"
+
+	PutVarChr MEMORY_FILE 0 SAMP_RATE Long
+	PutVarChr MEMORY_FILE 4 CHANNELS Long
+	PutVarChr MEMORY_FILE 8 INTERLEAVE Long
+
+	Log FILENAME 0 12 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+Next A
+
+

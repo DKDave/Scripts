@@ -1,0 +1,89 @@
+# ================================================================================
+# Bomberman: Jetters v2 (GameCube)
+# jetters.samp extract
+# QuickBMS script by Dave, 2020 (updated November 2020)
+# ================================================================================
+
+# Input file is file.bin
+
+
+Endian Big
+
+Open FDSE "jetters.samp" 1
+
+Get SAMP_SIZE asize 1
+Get BIN_SIZE asize 0
+
+If BIN_SIZE = 134164480
+	Math FILE_ENTRY = 0x7e000						# USA
+	Math COEFF_ENTRY = 0x84acc
+	Math FILE_COUNT = 854
+
+Elif BIN_SIZE = 132380672
+	Math FILE_ENTRY = 0x7e800						# Japan
+	Math COEFF_ENTRY = 0x852ac
+	Math FILE_COUNT = 853
+
+Else
+	Print "Unknown file.bin."
+	CleanExit
+Endif
+
+
+For A = 1 to FILE_COUNT
+	Goto FILE_ENTRY
+	Get JUNK Long
+	Get OFFSET Long
+	Get JUNK Long
+	Get JUNK Short
+	Get SAMP_RATE Short
+	XMath TEMP1 "FILE_ENTRY + 0x20"					# Next file start
+	Goto TEMP1
+	Get TEMP2 Long
+
+	If TEMP2 <> 0xFFFFFFFF						# No more file entries
+		Get NEXT_START Long
+		XMath SIZE "NEXT_START - OFFSET"
+	Else
+		XMath SIZE "SAMP_SIZE - OFFSET"
+	Endif
+
+# Create memory file
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x5f 0
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+# Write coefficients to DSP header
+
+	Goto COEFF_ENTRY
+	Math COEFF_MEM = 0x1c
+
+	For B = 1 To 16
+		Get COEFF_NUM Short
+		PutVarChr MEMORY_FILE COEFF_MEM COEFF_NUM Short
+		Math COEFF_MEM + 2
+	Next B
+
+# Write other required DSP header info
+
+	XMath SAMP_COUNT "(SIZE / 8) * 14"
+	XMath NIB_COUNT "SIZE * 2"
+
+	PutVarChr MEMORY_FILE 0x0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 0x04 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 0x08 SAMP_RATE Long
+
+	String FILENAME P "jetters_%A%.dsp"
+
+	XMath TEMP_SIZE "SIZE + 0x60"
+	Log FILENAME 0 TEMP_SIZE -1
+
+	Math FILE_ENTRY + 0x20
+	Math COEFF_ENTRY + 0x28
+
+Next A
+
