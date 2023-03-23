@@ -1,0 +1,37 @@
+# Monster Rancher 4 (PS2)
+# MF4.DAT extract
+# QuickBMS script by DKDave, 2023
+
+# Use this script on the SLUS_207.02 file in the same folder as MF4.DAT
+
+
+Open FDSE "MF4.DAT" 1
+
+Math ENTRY = 0x220604
+
+For A = 0 < 6712
+	Goto ENTRY
+	Get OFFSET Long
+	Get OFFSET2 Long
+	Math OFFSET * 0x800
+	Math OFFSET2 * 0x800
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	String FILENAME P "MR4_%A%"
+
+	If SIZE > 0
+		Log FILENAME OFFSET SIZE 1
+	Endif
+
+	Goto OFFSET 1
+	GetDString NAME 8 1
+	Get MISC1 Long 1
+
+	Math ENTRY + 4
+Next A
+
+
+
+
+
+

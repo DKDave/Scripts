@@ -1,0 +1,27 @@
+# Skylanders: Spyro's Adventure (PS3)
+# Extract audio from PCK archive
+# QuickBMS script by DKDave, 2021
+
+
+Endian Big
+
+Get TEMPNAME basename
+
+For A = 0
+	FindLoc OFFSET String "RIFX" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long
+	Get SIZE Long
+	Math SIZE + 8
+
+	String FILENAME P "%TEMPNAME%_%A%.wem"
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+

@@ -1,0 +1,86 @@
+# ================================================================================
+# Transformers (PS2)
+# TLB/VAC audio extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+# Use this script on the TLB file.  The VAC file will be loaded automatically
+
+
+Open FDDE "vac" 1
+Get DATA_SIZE asize 1
+
+FindLoc OFFSET String "Tones: " 0 ""
+
+If OFFSET = ""
+	Print "Exiting ..."
+	Exit
+Else
+	Goto OFFSET
+	GetDString JUNK 7
+	GetCT FILES String 0x0a
+	Math FILES = FILES
+Endif
+
+
+For A = 0 < FILES
+	FindLoc TEMP String "Name: " 0 ""
+	Goto TEMP
+	GetDString JUNK 7
+	GetCT FILENAME String 0x0a
+	String FILENAME - 3
+
+	FindLoc TEMP String "Offset: " 0 ""
+	Goto TEMP
+	GetDstring JUNK 8
+	GetCT OFFSET String 0x0a
+	Math OFFSET = OFFSET
+
+	FindLoc TEMP String "SampleRate: " 0 ""
+	Goto TEMP
+	GetDString JUNK 0x0c
+	GetCT RATE String 0x0a
+	Math RATE = RATE
+
+	PutArray 0 A OFFSET
+	PutArray 1 A RATE
+	PutArray 2 A FILENAME
+
+Next A
+
+
+XMath FILES2 "FILES - 1"
+
+For A = 0 < FILES
+	GetArray OFFSET 0 A
+	GetArray RATE 1 A
+	GetArray FILENAME 2 A
+	String FILENAME + ".vag"
+
+	If A = FILES2
+		XMath SIZE "DATA_SIZE - OFFSET"
+	Else
+		XMath TEMP "A + 1"
+		GetArray OFFSET2 0 TEMP
+		XMath SIZE "OFFSET2 - OFFSET"
+	Endif
+
+# Create .vag file
+
+	Log MEMORY_FILE 0 0
+	Set MEMORY_FILE binary "VAGp\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xac	\x44\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+	ReverseLong RATE
+	PutVarChr MEMORY_FILE 0x10 RATE Long
+	ReverseLong SIZE
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	ReverseLong SIZE
+
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+Next A
+
+

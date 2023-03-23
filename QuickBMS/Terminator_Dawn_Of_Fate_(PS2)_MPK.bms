@@ -1,0 +1,32 @@
+# ================================================================================
+# Terminator: Dawn Of Fate (PS2)
+# *MUSIC.MPK archive extract (should work for all 5 music archives)
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+IDString "MPAK"
+
+Goto 0x08
+Get FILES Long
+Get NAMES_SIZE Long
+
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Get NAME_OFF Long
+	Math NAME_OFF + 0x10
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x0c
+Next A
+
+
+
+
+

@@ -1,0 +1,52 @@
+# ================================================================================
+# Splatoon 3 (Nintendo Switch, 2022)
+# Extract audio from .zs compressed archives
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+Comtype ZSTD
+
+Get ID Long
+Get ZSIZE asize
+
+If ID = 0xfd2fb528
+	CLog MEMORY_FILE 0 ZSIZE ZSIZE
+Else
+	Log MEMORY_FILE 0 ZSIZE
+Endif
+
+Goto 0 -1
+GetDString ID 4 -1
+
+If ID <> "BARS"
+	Print "Not a BARS file."
+	Exit
+Endif
+
+Goto 0x0c -1
+Get FILES Long -1
+XMath TABLE "(FILES * 4) + 0x10"
+
+For A = 0 < FILES
+	Goto TABLE -1
+	Get INFO Long -1
+	Get DATA Long -1
+	Goto INFO -1
+	GetDString JUNK 0x24 -1
+	SavePos TEMP1 -1
+	Get NAME_OFF Long -1
+	Math NAME_OFF + TEMP1
+	Goto NAME_OFF -1
+	Get FILENAME String -1
+	String FILENAME + ".bwav"
+	Goto DATA -1
+	GetDString JUNK 0x1c -1
+	Get DATA_SIZE Long -1
+	XMath DATA_SIZE "((DATA_SIZE + 13) / 14) * 8 + 0x80"
+
+	Log FILENAME DATA DATA_SIZE -1
+
+	Math TABLE + 8
+Next A
+
+
