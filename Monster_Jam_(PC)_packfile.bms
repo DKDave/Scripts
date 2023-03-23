@@ -1,0 +1,71 @@
+# ================================================================================
+# Monster Jam (PC)
+# packfile.dat extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "PAK\x00"
+
+Math ENTRY = 0xc									# start of folder structure
+
+For A = 0
+	Goto ENTRY
+	Get NEXT_FOLDER Long							# 0 = no more folders
+	Get FILE_INFO Long								# Start of file entries for this folder
+	Get FOLDER_NAME String
+
+# Process files in this folder
+
+	Goto FILE_INFO
+
+	For B = 0
+		Get NEXT_FILE Long							# 0 = no more files
+		Get ZSIZE Long							# size of each part (including 8-byte header)
+		XMath ZSIZE2 "ZSIZE - 8"						# Only for !CMP blocks
+		Get BLOCKS Long							# number of parts for this file
+		Get BLOCK_OFF Long						# start of part offsets for this file
+		Get FILENAME String
+
+# process blocks for this file
+
+		Log MEMORY_FILE 0 0
+
+		For C = 0 < BLOCKS
+			Goto BLOCK_OFF
+			Get PART_OFF Long
+			Goto PART_OFF
+			GetDString TYPE 4
+			Get PART_SIZE Long
+
+			If TYPE = "!CMP"						# compressed data
+				SavePos FILE_START Long
+				Append
+				CLog MEMORY_FILE FILE_START ZSIZE2 PART_SIZE
+				Append
+			Else
+				Log MEMORY_FILE PART_OFF ZSIZE			# uncompressed data
+			Endif
+
+			Math BLOCK_OFF + 4
+		Next C
+
+		Get MEM_SIZE asize -1
+		String FILENAME P "%FOLDER_NAME%\%FILENAME%"
+		Log FILENAME 0 MEM_SIZE -1						# completed file
+
+		If NEXT_FILE = 0
+			Break
+		Endif
+
+		Goto NEXT_FILE
+
+	Next B
+
+	Math ENTRY = NEXT_FOLDER
+
+	If NEXT_FOLDER = 0
+		Break
+	Endif
+
+Next A
+
