@@ -1,0 +1,35 @@
+# ================================================================================
+# Silent Hill Origins (PS2)
+# .arc extract
+# QuickBMS script by DKDave, 2020
+# ================================================================================
+
+IDString "A2.0"
+
+ComType zlib
+
+Get ENTRIES Long
+Get DATA_START Long
+Get FILENAMES Long
+
+Set FILE_ENTRY Long 0x14
+
+For A = 1 to ENTRIES
+	Goto FILE_ENTRY
+	Get FNAME_OFFSET Long
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Math FNAME_OFFSET + FILENAMES
+	Goto FNAME_OFFSET
+	Get FILENAME String
+
+	If SIZE = 0
+		Log FILENAME OFFSET ZSIZE
+	Else
+		Clog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math FILE_ENTRY + 0x10
+
+Next A
