@@ -1,0 +1,73 @@
+# ================================================================================
+# Gregory Horror Show (PS2)
+# Extract voice files from both versions of the game
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+# Notes:
+
+# Use this script with the file SLES_519.33 or SLPM_653.24
+# There are quite a few blank files that can be ignored
+# Use the extracted files with the attached .txth file to play them in Foobar with the vgmstream plugin
+
+
+Get TEMPNAME filename
+
+If TEMPNAME = "SLES_519.33"							# EU
+	Open FDSE "NGYSTM_U.BIN" 1						# raw voice data
+	Math ENTRY = 0x242080						# offsets
+	Math TABLE2 = 0x2403d0						# channels / sample rate info
+	Math ENTRIES = 0x3de
+
+Elif TEMPNAME = "SLPM_653.24"						# Japan
+	Open FDSE "NGYSTM.BIN" 1						# raw voice data
+	Math ENTRY = 0x24baa0						# offsets
+	Math TABLE2 = 0x24a0b0						# channels / sample rate info
+	Math ENTRIES = 0x366
+
+Else
+	Print "Incorrect input file.  Please use either SLES_519.33 or SLPM_653.24"
+	Exit
+
+Endif
+
+
+Set MEMORY_FILE binary "\x00\x00\x00\x00\x00\x00\x00\x00"
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get OFFSET Long
+	Get JUNK Long
+	Get OFFSET2 Long
+	XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+	Math OFFSET * 0x800
+
+	Goto TABLE2
+	Get MISC1 Byte
+	XMath CHANNELS "(MISC1 & 0xc) >> 2"					# 0 = mono, 1 = stereo
+	XMath SAMP_RATE "MISC1 & 0x3"					# 1 = 48000, 2 = 44100
+
+	If CHANNELS = 0
+		PutVarChr MEMORY_FILE 0 1 Long
+	Else
+		PutVarChr MEMORY_FILE 0 2 Long
+	Endif
+
+	If SAMP_RATE = 1
+		PutVarChr MEMORY_FILE 4 48000 Long
+	Else
+		PutVarChr MEMORY_FILE 4 44100 Long
+	Endif
+
+	String FILENAME P "Voice_%A%.vgmstream"
+
+	Log FILENAME 0 8 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+	Math ENTRY + 8
+	Math TABLE2 + 6
+Next A
+
+
