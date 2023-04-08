@@ -1,0 +1,45 @@
+# ================================================================================
+# Silent Hill: Origins (PS2)
+# Demux audio from IGCStream files
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: This will also work on the IGCStream files from the PSP version, except those are .at3 instead of .ads
+
+
+Get FILE_END asize
+Get TEMPNAME basename
+
+Goto 0x14
+Get MISCNAME String
+Padding 4
+SavePos OFFSET
+
+
+For A = 0
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	Get MISC1 Short
+	Get SIZE Short
+
+	If MISC1 = 0xa000
+		XMath OFFSET2 "OFFSET + 4"
+
+		Append
+		Log MEMORY_FILE OFFSET2 SIZE
+		Append
+
+	Endif
+
+	Math OFFSET + SIZE
+	Math OFFSET + 4
+Next A
+
+Get MEM_SIZE asize -1
+String FILENAME P "%TEMPNAME%.ads"
+
+Log FILENAME 0 MEM_SIZE -1
+
