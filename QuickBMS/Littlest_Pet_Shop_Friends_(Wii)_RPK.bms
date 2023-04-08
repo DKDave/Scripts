@@ -1,0 +1,48 @@
+# ================================================================================
+# Littlest Pet Shop Friends (Wii)
+# RPK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+Endian Big
+
+Comtype DK2
+
+Get ZSIZE asize
+CLog MEMORY_FILE 0 ZSIZE ZSIZE
+
+Math CHUNK_OFFSET = 0x8
+
+For A = 0
+
+	Goto CHUNK_OFFSET -1
+	GetDString CHUNK_NAME 4 -1
+	Get CHUNK_SIZE Long -1
+
+	If CHUNK_NAME = "DATA"
+		Break
+	Endif
+
+	If CHUNK_NAME = "AGRP"
+		GetDString JUNK 0x14 -1
+		XMath FILES "(CHUNK_SIZE - 0x1c) / 0x28"
+
+		For B = 0 < FILES
+			GetDString JUNK 0x18 -1
+			Get OFFSET Long -1
+			Get SIZE Long -1
+			Get NAME_OFF Long -1
+			Get JUNK Long -1
+			SavePos TEMP1 -1
+			Goto NAME_OFF -1
+			Get FILENAME String -1
+			Log FILENAME OFFSET SIZE -1
+			Goto TEMP1 -1
+		Next B
+
+	Endif
+
+	Math CHUNK_OFFSET + CHUNK_SIZE
+
+Next A
+
