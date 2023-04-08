@@ -1,0 +1,12 @@
+# ================================================================================
+# Black (PS2)
+# TXTH file for SSH/BKS extracted files
+# By Dave, 2019
+# ================================================================================
+
+codec = PSX
+sample_rate = @0x00:LE$4
+channels = @0x04:LE$4
+interleave = @0x08:LE$4
+start_offset = 0x0c
+num_samples = data_size
