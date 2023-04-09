@@ -1,0 +1,39 @@
+# ================================================================================
+# Pac-Man World 3 (GameCube)
+# GCP audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: The .str files can be played with Foobar/vgmstream - the associated wav file will be automatically detected
+
+
+Endian Big
+
+Goto 0x0c
+Get FILES Long
+Get ENTRY Long
+Math ENTRY * 0x800
+Get NAMES Long
+Math NAMES * 0x800
+Math NAMES + 0x800
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get JUNK Long
+	Get SIZE Long
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get MISC4 Long
+	Get MISC5 Long
+	Get MISC6 Long
+
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x20
+Next A
+

@@ -1,0 +1,38 @@
+# Buffy The Vampire Slayer: Chaos Bleeds (GameCube)
+# Filelist.bin/.000 extract
+# QuickBMS script by DKDave, 2023
+
+
+Endian Big
+
+Open FDDE "000" 1
+
+Goto 8
+Get FILES Long
+Goto 0x10
+Get SIZE1 Long
+XMath NAME_TABLE "SIZE1 + 0x10"
+Math NAME_OFF = NAME_TABLE
+
+Math ENTRY = 0x14
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get SIZE Long
+	GetDString JUNK 0x10
+	Get OFFSET Long
+
+	Goto NAME_OFF
+	Get NAME_OFF2 Long
+	Math NAME_OFF2 + NAME_OFF
+	Goto NAME_OFF2
+	Get FILENAME String
+	String FILENAME - "x:\buffy\"
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x1c
+	Math NAME_OFF + 4
+Next A
+
+
