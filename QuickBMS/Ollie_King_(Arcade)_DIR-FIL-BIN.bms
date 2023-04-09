@@ -1,0 +1,48 @@
+# ================================================================================
+# Kodai Ouja Kyouryuu King (Ollie King) (Arcade)
+# FIL/DIR/BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the DIR file
+
+
+comtype NISLZS
+
+Open FDDE "fil" 1
+Open FDDE "bin" 2
+
+Get FOLDER_COUNT asize
+Math FOLDER_COUNT / 0x28
+
+For A = 0 < FOLDER_COUNT
+	Get START_FILE Long
+	Get FILE_COUNT Long
+	GetDString FOLDER_NAME 0x20
+
+	XMath FILE_OFF "START_FILE * 0x2c"
+	Goto FILE_OFF 1
+
+	For B = 0 < FILE_COUNT
+		Get OFFSET Long 1
+		Get SIZE Long 1
+		Get COMP_FLAG Long 1
+		GetDString FILENAME 0x20 1
+		String OUTFILE P "%FOLDER_NAME%\%FILENAME%"
+
+		If COMP_FLAG = 0
+			Log OUTFILE OFFSET SIZE 2
+		Else
+			Goto OFFSET 2
+			Get JUNK Long 2							# Should be ZZSL
+			Get SIZE Long 2
+			Get ZSIZE Long 2
+			Math ZSIZE - 12
+			SavePos OFFSET2 2
+			CLog OUTFILE OFFSET2 ZSIZE SIZE 2
+		Endif
+
+	Next B
+
+Next A
+
