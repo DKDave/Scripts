@@ -1,0 +1,29 @@
+# Miami Vice (PSP)
+# ASR audio extract
+# QuickBMS script by DKDave, 2023
+
+IDString "Asura   "
+
+Math OFFSET = 8
+Get FILE_END asize
+
+For A = 0
+	Goto OFFSET
+	GetDString CHUNK_NAME 4
+
+	If CHUNK_NAME = ""
+		Break
+	Endif
+
+	Get CHUNK_SIZE Long
+	GetDString JUNK 0x10
+	Get DATA_SIZE Long
+	XMath OFFSET2 "OFFSET + (CHUNK_SIZE - DATA_SIZE)"
+	Get FILENAME String
+	String FILENAME R ".wav" ".vag"
+	String FILENAME R "Sound properties from .." ""
+
+	Log FILENAME OFFSET2 DATA_SIZE
+
+	Math OFFSET + CHUNK_SIZE
+Next A
