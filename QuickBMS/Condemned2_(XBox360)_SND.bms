@@ -1,0 +1,101 @@
+# Condemned 2 (XBox 360)
+# SND audio extract
+# QuickBMS script by DKDave, 2023 (v2 - 10 April 2023)
+
+# Files are generated as XMA RIFF/WAVE files
+
+
+Endian Big
+
+Get TEMPNAME basename
+
+Goto 4
+Get FILES Long
+Math ENTRY = 0x14
+Math FILENUM = 0
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get T2_ENTRY Long
+
+	Goto T2_ENTRY
+	Get T2_COUNT Long
+	GetDString JUNK 0x0c
+
+	For B = 0 < T2_COUNT
+		Get SAMP_RATE Long
+		GetDString JUNK 8
+		Get CHANNELS Long
+		Get JUNK Long
+		Get OFFSET Long
+		Get JUNK Long
+		SavePos TEMP1
+
+		Goto OFFSET
+		GetDString JUNK 8
+		Get AUDIO_OFF Long
+		Math AUDIO_OFF + OFFSET
+		Math AUDIO_OFF + 8
+		Get AUDIO_SIZE Long
+		Get INFO_OFF Long
+		Math INFO_OFF + OFFSET
+		Math INFO_OFF + 8
+		Goto INFO_OFF							# info for WAVE file "fmt" chunk
+
+		XMath RIFF_SIZE "AUDIO_SIZE + 52"
+
+		Set MEMORY_FILE binary "RIFF\x00\x00\x00\x00WAVEfmt \x20\x00\x00\x00"
+		Get XMA_TYPE Short
+		Get XMA_BITS Short
+		Get XMA_ENCODE Short
+		Get XMA_SKIP Short
+		Get XMA_STREAMS Short
+		Get XMA_LOOP Byte
+		Get XMA_VER Byte
+		Get XMA_PSEUDO Long
+		Get XMA_RATE Long
+		Get XMA_LOOP1 Long
+		Get XMA_LOOP2 Long
+		Get XMA_SUB Byte
+		Get XMA_CHANNELS Byte
+		Get XMA_MASK Short
+
+		Endian Little
+		PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+		PutVarChr MEMORY_FILE 0x14 XMA_TYPE Short
+		PutVarChr MEMORY_FILE 0x16 XMA_BITS Short
+		PutVarChr MEMORY_FILE 0x18 XMA_ENCODE Short
+		PutVarChr MEMORY_FILE 0x1a XMA_SKIP Short
+		PutVarChr MEMORY_FILE 0x1c XMA_STREAMS Short
+		PutVarChr MEMORY_FILE 0x1e XMA_LOOP Byte
+		PutVarChr MEMORY_FILE 0x1f XMA_VER Byte
+		PutVarChr MEMORY_FILE 0x20 XMA_PSEUDO Long
+		PutVarChr MEMORY_FILE 0x24 XMA_RATE Long
+		PutVarChr MEMORY_FILE 0x28 XMA_LOOP1 Long
+		PutVarChr MEMORY_FILE 0x2C XMA_LOOP2 Long
+		PutVarChr MEMORY_FILE 0x30 XMA_SUB Byte
+		PutVarChr MEMORY_FILE 0x31 XMA_CHANNELS Byte
+		PutVarChr MEMORY_FILE 0x32 XMA_MASK Short
+		PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+		PutVarChr MEMORY_FILE 0x34 0x61746164 Long
+		PutVarChr MEMORY_FILE 0x38 AUDIO_SIZE Long
+		Endian Big
+
+		String FILENAME P "%TEMPNAME%_%FILENUM%.xma"
+
+		Append
+		Log FILENAME 0 0x3c -1
+		Log FILENAME AUDIO_OFF AUDIO_SIZE
+		Append
+
+		Goto TEMP1
+
+		Math FILENUM + 1
+
+	Next B
+
+	Math ENTRY + 8
+
+Next A
+
