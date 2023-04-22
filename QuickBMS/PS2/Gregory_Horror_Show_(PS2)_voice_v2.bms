@@ -1,0 +1,85 @@
+# ================================================================================
+# Gregory Horror Show (PS2)
+# Extract voice files from both versions of the game
+# QuickBMS script by DKDave, 2021 (updated 2023)
+# ================================================================================
+
+# Notes:
+
+# Use this script with either SLES_519.33 (+ NGYSTM_U.BIN) or SLPM_653.24 (+ NGYSTM.BIN)
+# Extracted files will be in .ss2 format and can be played in Foobar with the vgmstream plugin
+
+
+Get TEMPNAME filename
+
+If TEMPNAME = "SLES_519.33"							# EU
+	Open FDSE "NGYSTM_U.BIN" 1						# raw voice data
+	Math ENTRY = 0x242080						# offsets
+	Math TABLE2 = 0x2403d0						# channels / sample rate info
+	Math ENTRIES = 0x3dd
+
+Elif TEMPNAME = "SLPM_653.24"						# Japan
+	Open FDSE "NGYSTM.BIN" 1						# raw voice data
+	Math ENTRY = 0x24baa0						# offsets
+	Math TABLE2 = 0x24a0b0						# channels / sample rate info
+	Math ENTRIES = 0x366
+
+Else
+	Print "Incorrect input file.  Please use either SLES_519.33 or SLPM_653.24"
+	Exit
+
+Endif
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 1 Long						# 16-bit PCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get OFFSET Long
+	Get JUNK Long
+	Get OFFSET2 Long
+	XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+	Math OFFSET * 0x800
+
+	Goto TABLE2
+	Get MISC1 Byte
+	XMath CHANNELS "(MISC1 & 0xc) >> 2"					# 0 = mono, 1 = stereo (bits 2-3)
+	XMath SAMP_RATE "MISC1 & 0x3"					# 1 = 48000, 2 = 44100 (bits 0-1)
+
+	If CHANNELS = 0
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long				# No interleave for mono
+	Else
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 0x200 Long			# Interleave for stereo
+	Endif
+
+	If SAMP_RATE = 1
+		PutVarChr MEMORY_FILE 0x0c 48000 Long
+	Else
+		PutVarChr MEMORY_FILE 0x0c 44100 Long
+	Endif
+
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME P "GHS_%A%.ss2"
+
+	Log FILENAME 0 0x28 -1						# SS2 header
+	Append
+	Log FILENAME OFFSET SIZE 1						# Audio data
+	Append
+
+	Math ENTRY + 8
+	Math TABLE2 + 6
+Next A
+
