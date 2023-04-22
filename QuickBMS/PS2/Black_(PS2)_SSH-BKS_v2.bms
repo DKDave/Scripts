@@ -1,0 +1,65 @@
+# ================================================================================
+# Black (PS2)
+# SSH / BKS audio extract (v2)
+# QuickBMS script by Dave, 2020 (Updated 2023)
+# ================================================================================
+
+# SSH = file table, BKS = audio data
+# Output files are .ss2 which will play in Foobar/vgmstream
+
+
+Open FDDE "BKS" 1
+
+Goto 0x10
+Get INTERLEAVE Long
+Get JUNK Byte								# Maybe audio type ?
+Get CHANNELS Byte
+Get ENTRIES Short
+Get FILE_TABLE Long
+
+Get TEMPNAME basename
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+Goto FILE_TABLE
+
+For A = 1 To ENTRIES
+	Get OFFSET Short
+	Get SIZE Short
+	Get SAMP_RATE Long
+
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+
+	String FILENAME P "%TEMPNAME%_%A%.ss2"
+
+	If CHANNELS = 1
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long				# No interleave for mono
+	Else
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long			# Interleave for stereo
+	Endif
+
+	PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+Next A
+
+
