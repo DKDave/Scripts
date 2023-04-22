@@ -1,0 +1,71 @@
+# ================================================================================
+# Lifeline (PS2)
+# .A archive extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio archives will be extracted as .vag files, other files as-is
+
+
+IDString "arc\x00"
+
+Get TEMPNAME basename
+
+Goto 8
+Get FILES Long
+Get OFFSET Long										# Start offset of file data
+
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get TOTAL_SIZE Long
+	Goto 0x10 0 SEEK_CUR
+	Get ACTUAL_SIZE Long
+
+	String TEMP1 = FILENAME
+	String TEMP1 $ ".sv"
+
+	If TEMP1 = ".sv"									# extract audio archive
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x2f 0 Byte
+		PutVarChr MEMORY_FILE 0 0x70474156 Long					# "VAGp"
+		PutVarChr MEMORY_FILE 0x10 0xe02e0000 Long					# sample rate = 12000
+
+		Goto OFFSET
+		GetDString JUNK 8
+		Get SV_FILES Long
+		Get TABLE_SIZE Long
+
+		For B = 0 < SV_FILES
+			Get JUNK Long
+			Get SV_OFFSET Long
+			Get JUNK Long
+			Get SV_SIZE Long
+			Math SV_OFFSET + OFFSET
+
+			ReverseLong SV_SIZE
+			PutVarChr MEMORY_FILE 0x0c SV_SIZE Long
+			ReverseLong SV_SIZE
+
+			String FILENAME P "%TEMPNAME%_%B%.vag"
+
+			Log FILENAME 0 0x30 -1
+			Append
+			Log FILENAME SV_OFFSET SV_SIZE
+			Append
+		Next B
+
+	Else
+		Log FILENAME OFFSET ACTUAL_SIZE						# All other files
+	Endif
+
+
+	Math OFFSET + TOTAL_SIZE
+
+	Math ENTRY + 0x30
+Next A
+
+
+
