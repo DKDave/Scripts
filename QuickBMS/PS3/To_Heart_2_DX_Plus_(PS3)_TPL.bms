@@ -1,0 +1,44 @@
+# ================================================================================
+# To Heart 2 DX Plus (PS3, 2011)
+# TPL decompression
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+
+Comtype LZMA_86HEAD
+
+Get TEMPNAME basename
+String FILENAME P "%TEMPNAME%_dec.tpl"
+
+Math OFFSET = 0
+
+For A = 0
+	Goto OFFSET
+	Get ZSIZE Long
+	SavePos OFFSET
+
+	If ZSIZE & 0x80000000							# If bit 31 is 0, this is the final chunk
+		Math FLAG = 0
+	Else
+		Math FLAG = 1
+	Endif
+
+	Math ZSIZE & 0x7fffffff
+
+	Append
+	CLog FILENAME OFFSET ZSIZE ZSIZE
+	Append
+
+	If FLAG = 1
+		Break
+	Endif
+
+	Math OFFSET + ZSIZE								# Align to next 4-byte offset
+	Goto OFFSET
+	Padding 4
+	SavePos OFFSET
+
+Next A
+
