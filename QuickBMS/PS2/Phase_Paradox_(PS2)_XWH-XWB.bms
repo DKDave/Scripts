@@ -1,0 +1,73 @@
+# Phase Paradox (PS2)
+# XWH / XWB extract
+# QuickBMS script by DKDave, 2023
+
+# Note: These files will already play as-is in Foobar/vgmstream, so this script is just if you want to extract the individual files unaltered
+# Extracted files are in .ss2 format
+# Use this script on the XWH file - the XWB file will automatically be loaded
+
+
+IDString "RXWS"
+
+Open FDDE "XWB" 1
+
+FindLoc FORM_OFF String "FORM" 0 ""
+FindLoc FTXT_OFF String "FTXT" 0 ""
+Math FORM_OFF + 0x10
+Math FTXT_OFF + 0x10
+XMath FTXT_ENTRY "FTXT_OFF + 4"
+
+Goto FORM_OFF
+Get FILES Long
+SavePos ENTRY
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString JUNK 9
+	Get CHANNELS Byte
+	Get SAMP_RATE Short
+	Get JUNK Long
+	Get OFFSET Long
+	Get SIZE Long
+	Get JUNK Long
+
+	If CHANNELS = 1
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long				# No interleave for mono
+	Else
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 0x10 Long			# Interleave for stereo
+	Endif
+
+	PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	Goto FTXT_ENTRY
+	Get NAME_OFF Long
+	Math NAME_OFF + FTXT_OFF
+	Goto NAME_OFF
+	Get FILENAME String
+	String FILENAME + ".ss2"
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+	
+	Math ENTRY + 0x1c
+	Math FTXT_ENTRY + 4
+Next A
+
