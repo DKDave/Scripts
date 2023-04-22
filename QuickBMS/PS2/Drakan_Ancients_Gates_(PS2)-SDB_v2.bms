@@ -1,0 +1,74 @@
+# ================================================================================
+# Drakan: The Ancients' Gates (PS2)
+# Extract audio from .SDB archives
+# QuickBMS script by Dave, 2020 (updated 2023) (v2)
+# ================================================================================
+
+# Files are extracted as .ss2
+# There doesn't seem to be any stereo audio in this game, even the music is mono
+
+
+IDString "SRSC\x01\x01"
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long						# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long							# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long						# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+Goto 0x06
+Get ENTRY Long
+Get FILES Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get FILE_TYPE Short								# file type? (302 = audio header, 304 = audio data)
+	Get FILE_NUM Short
+	Get MISC3 Short
+	Get OFFSET Long
+	Get SIZE Long
+
+	If FILE_TYPE = 0x302								# Audio header
+		Goto OFFSET
+		Get TEXT_LEN Short
+		GetDString FILENAME TEXT_LEN
+		String FILENAME + ".ss2"
+		Get JUNK Long
+		Get CHANNELS Short
+		Get BITS Short
+		Get SAMP_RATE Short
+
+		If CHANNELS > 2							# not a proper file
+			String FILENAME = "UNKNOWN"
+		Endif
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+
+		If CHANNELS = 1
+			PutVarChr MEMORY_FILE 0x14 0 Long				# no interleave
+		Else
+			PutVarChr MEMORY_FILE 0x14 0 Long				# are there any stereo files in this game?
+		Endif
+
+	Elif FILE_TYPE = 0x304								# Audio data
+		If FILENAME <> "UNKNOWN"
+			PutVarChr MEMORY_FILE 0x24 SIZE Long
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE
+			Append
+		Endif
+
+	Endif
+
+	Math ENTRY + 0xe
+Next A
+
