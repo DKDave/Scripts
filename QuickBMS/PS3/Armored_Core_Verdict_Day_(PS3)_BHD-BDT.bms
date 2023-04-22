@@ -1,0 +1,66 @@
+# Armored Core: Verdict Day (PS3)
+# .BHD / .BDT extract
+# QuickBMS script by Dave, 2021
+
+QuickBMSVer -64
+
+IDString "BHD5"
+
+Open FDDE "BDT" 1
+
+Endian Big
+
+Goto 0x10
+Get ENTRIES Long
+Math ENTRY = 0x18
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get COUNT1 Long
+	Get ENTRY2 Long
+
+	For B = 0 < COUNT1
+		Goto ENTRY2
+		Get JUNK Long
+		Get SIZE Long
+		Get OFFSET  LongLong
+		Goto OFFSET 1
+		GetDString FILE_ID 4 1
+
+		String FILENAME P "FILE_%A%_%B%"
+
+		If FILE_ID = "FSB4"
+			String FILENAME + ".fsb"
+			Log FILENAME OFFSET SIZE 1
+		Endif
+
+		If FILE_ID = "FEV1"
+			String FILENAME + ".fev"
+		Endif
+
+		If FILE_ID = "DCX"
+			String FILENAME + ".dcx"
+		Endif
+
+		If FILE_ID = "TPF"
+			String FILENAME + ".tpf"
+		Endif
+
+		If FILE_ID = "BND3"
+			String FILENAME + ".bnd"
+		Endif
+
+		If FILE_ID = "TAE"
+			String FILENAME + ".tae"
+		Endif
+
+		Math ENTRY2 + 0x10
+	Next B
+
+	Math ENTRY + 8
+Next A
+
+
+
+
+

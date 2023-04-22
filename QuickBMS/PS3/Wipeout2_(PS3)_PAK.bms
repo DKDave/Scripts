@@ -1,0 +1,32 @@
+================================================================================
+# Wipeout 2 (PS3)
+# data.pak extract
+# QuickBMS script by Dave, 2021
+================================================================================
+
+comtype lzma_86head
+
+IDString "tongas_pack_v30000"
+
+Get ENTRIES Long
+
+Goto 0x1a
+
+For A = 1 To ENTRIES
+	Get OFFSET Long
+	Get SIZE Long
+	Get COMP_FLAG Long						# 1 = compressed, 0 = uncompressed
+	Get TEXT_LEN Long
+	GetDString FILENAME TEXT_LEN
+
+	If COMP_FLAG = 0
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	If COMP_FLAG = 1
+		CLog FILENAME OFFSET SIZE SIZE
+	Endif
+
+Next A
+
+

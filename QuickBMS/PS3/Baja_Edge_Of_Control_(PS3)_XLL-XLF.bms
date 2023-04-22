@@ -1,0 +1,60 @@
+# ================================================================================
+# Baja: Edge Of Control (PS3)
+# XLL / XLF extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+Open FDDE "XLF" 1
+
+Endian Big
+Comtype zlib_noerror
+
+Get JUNK Short
+Get PAK_COUNT Short
+Get PAK_TABLE Long
+Math PAK_TABLE + 8
+Math PAK_ENTRY = 8
+Math PAK_DATA = 0								# start of this PAK's data in XLF file
+XMath PAK_FILE_TABLE "PAK_TABLE + (PAK_COUNT * 12)"				# start of actual file info
+
+
+For A = 1 To PAK_COUNT
+	Goto PAK_ENTRY
+	Get NAME_SIZE Byte
+	GetDString PAK_NAME NAME_SIZE
+	String PAK_NAME - ".PAK"
+	Get PAK_SIZE Long							# total size of these files
+	SavePos PAK_ENTRY
+
+	Goto PAK_TABLE
+
+	Get MISC1 Long
+	Get FILE_COUNT Short						# Number of files in this PAK entry
+	Get JUNK Short
+	Get MISC2 Long
+
+	Goto PAK_FILE_TABLE
+
+	For B = 1 To FILE_COUNT
+		Get FNAME_LEN Byte
+		GetDString FILENAME FNAME_LEN
+		String FILENAME P "%PAK_NAME%\%FILENAME%"			# separate files by "PAK" name because of duplicates
+		Get FILES_TOTAL Long
+		Get PART_COUNT Short
+
+		For C = 1 To PART_COUNT
+			Get PART_OFFSET Long
+			Math PART_OFFSET + PAK_DATA			# actual offset of compressed file part
+			Append
+			CLog FILENAME PART_OFFSET 0x10000 0x10000 1
+			Append
+		Next C
+
+	Next B
+
+	SavePos PAK_FILE_TABLE
+
+	Math PAK_TABLE + 12
+	Math PAK_DATA + PAK_SIZE
+
+Next A

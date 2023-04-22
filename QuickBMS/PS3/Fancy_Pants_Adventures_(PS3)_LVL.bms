@@ -1,0 +1,34 @@
+# ================================================================================
+# Fancy Pants Adventures
+# LVL extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+
+Get TEMPNAME basename
+Get FILE_END asize
+
+Math OFFSET = 0
+
+For A = 0
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long						# CRSR
+	GetDString TYPE 4						# LEVL / TXET etc.
+	Get JUNK Long
+	Get SIZE Long
+	Math SIZE + 0x20
+
+	String TYPE r TYPE
+	String FILENAME P "%TEMPNAME%_%A%.%TYPE%"
+	Log FILENAME OFFSET SIZE
+
+	Math OFFSET + SIZE
+Next A
+
+
