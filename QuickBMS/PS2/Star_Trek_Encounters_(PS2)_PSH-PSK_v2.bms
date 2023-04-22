@@ -1,0 +1,65 @@
+# ================================================================================
+# Star Trek: Encounters (PS2)
+# PSH / PSK audio extract (v2)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "PSK" 1
+
+Get TEMPNAME basename
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+Goto 0x1c
+Get TABLE Long
+Goto TABLE
+GetDString JUNK 8
+Get ENTRY Long
+Get FILES Long
+
+Math ENTRY + TABLE
+
+For A = 0 < FILES
+	Goto ENTRY
+	Goto 0x14 0 SEEK_CUR
+	Get OFFSET Long
+	Get SIZE Long
+	Get SAMP_RATE Long
+	Goto 8 0 SEEK_CUR
+	Get INTERLEAVE Long
+	Math INTERLEAVE / 4
+
+	If INTERLEAVE = 0
+		Math CHANNELS = 1
+	Else
+		Math CHANNELS = 2
+	Endif
+
+	PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+	PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME P "%TEMPNAME%_%A%.ss2"
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+	Math ENTRY + 0x44
+Next A
+
+
