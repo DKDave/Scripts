@@ -1,0 +1,55 @@
+# Heavenly Sword - .WAD extractor (PS3)
+# By Dave, 2019
+
+Endian Big
+Comtype zlib
+IDString "0DAW"
+
+Goto 0x0008
+Get ENTRIES Long
+Get DATA_START Long
+Get FOLDER_NAME BASENAME
+
+Goto 0x0030
+
+For A = 1 to ENTRIES
+
+	Get OFFSET Long
+	Get ZSIZE Long						# ZSIZE (compressed)
+	Get SIZE Long						# SIZE (uncompressed)
+	Get JUNK Long
+	Math OFFSET + DATA_START					# Actual file offset
+	Set FILENAME FOLDER_NAME					# Output to basename folder
+	String FILENAME + "\"
+	String FILENAME + "File_"
+	String FILENAME + A
+
+	SavePos TEMP_POS
+	Goto OFFSET
+	GetDString FILE_TYPE 0x04
+
+	If FILE_TYPE = "FEV1"
+		String FILENAME + ".fev"
+	Endif
+
+	If FILE_TYPE = "FSB3"
+		String FILENAME + ".fsb"
+	Endif
+
+	If FILE_TYPE = "RIFF"
+		String FILENAME + ".wav"
+	Endif
+
+	If ZSIZE <> 0						# some files have ZSIZE and SIZE as 0, so skip these
+
+		If ZSIZE = SIZE
+			Log FILENAME OFFSET ZSIZE		
+		Else
+			Clog FILENAME OFFSET ZSIZE SIZE
+		Endif
+
+	Endif
+
+	Goto TEMP_POS
+
+Next A

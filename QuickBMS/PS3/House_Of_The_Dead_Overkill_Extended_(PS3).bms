@@ -1,0 +1,35 @@
+# ================================================================================
+# House Of The Dead: Overkill (Extended Cut) (PS3)
+# QuickBMS script by Dave, 2019
+# ================================================================================
+
+Endian big
+
+Get JUNK Long
+Get ALIGN Long
+Get JUNK Long
+Get FILES Long
+Get FILE_INFO Long
+Math FILE_INFO * ALIGN
+Goto 0x28
+Get NAMES_TABLE Long
+Math NAMES_TABLE * ALIGN
+
+FOR A = 1 to FILES
+
+	Goto FILE_INFO
+	Get FILE_START Long
+	Math FILE_START * ALIGN
+	Get JUNK Long
+	Get FILE_SIZE Long
+	Get NAME_OFFSET Long
+	Get JUNK Long
+	Math NAME_OFFSET + NAMES_TABLE
+	Goto NAME_OFFSET
+	Get FILENAME String
+
+	Log FILENAME FILE_START FILE_SIZE
+
+	Math FILE_INFO + 0x14
+
+NEXT A
