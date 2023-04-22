@@ -1,9 +1,0 @@
-# Gregory Horror Show (PS2)
-# TXTH file
-
-codec = PCM16LE
-start_offset = 8
-channels = @0x00:LE$4
-sample_rate = @0x04:LE$4
-interleave = 0x200
-num_samples = data_size
