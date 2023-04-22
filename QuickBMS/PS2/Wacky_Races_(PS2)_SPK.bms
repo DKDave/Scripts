@@ -1,0 +1,34 @@
+# ================================================================================
+# Wacky Races (PS2)
+# SPK audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Get FILES Long
+Math FILES / 0x10
+Get JUNK Long
+
+For A = 0 < FILES
+	Get JUNK Long
+	Get JUNK Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	ReverseLong SIZE
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	ReverseLong SIZE
+	PutVarChr MEMORY_FILE 0x10 0x22560000 Long
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+Next A
