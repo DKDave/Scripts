@@ -1,0 +1,68 @@
+# ================================================================================
+# Grandia (PS1)
+# IDX/STZ audio extract
+# QuickBMS script by DKDave, 2023 (v2)
+# ================================================================================
+
+# Use this script on the IDX files
+
+
+Open FDDE "STZ" 1
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long							# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long								# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long							# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Get STZ_SIZE asize 1
+Get FILES asize 0
+Math FILES / 4
+
+Math ENTRY = 0
+Get TEMPNAME basename
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get TEMP1 Long
+
+	If TEMP1 <> 0xFFFFFFFF
+		XMath STZ_OFFSET "(TEMP1 & 0xFFFFF) * 0x800"
+		XMath ID "(TEMP1 & 0x7FF00000) >> 20"						# Some file ID?
+		XMath FLAG "(TEMP1 & 0x80000000) >> 31"					# Always seems to be 1 if file is stereo
+		Goto STZ_OFFSET 1
+		Get CHANNELS Long 1
+		Get SAMP_RATE Long 1
+		Goto 0x10 1 SEEK_CUR
+		Get SIZE Long 1
+		XMath OFFSET "STZ_OFFSET + 0x800"
+
+		If CHANNELS = 1
+			Math SIZE - 0x800
+			Math INTERLEAVE = 0
+		Else
+			Math INTERLEAVE = 0x800
+		Endif
+
+		String FILENAME P "%TEMPNAME%_%A%.ss2"
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+		PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET SIZE 1
+		Append
+	Endif
+
+	Math ENTRY + 4
+Next A
+
