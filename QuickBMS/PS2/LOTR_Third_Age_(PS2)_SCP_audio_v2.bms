@@ -1,0 +1,134 @@
+# ================================================================================
+# Lord Of The Rings: The Third Age (PS2)
+# .SCP / .SAS audio extract
+# By DKDave, 2020 (updated 2023) (v2)
+# ================================================================================
+
+# Input is .SCP file
+# Audio is extracted as .ss2 files which will play in Foobar/vgmstream
+
+
+Open FDDE "SAS" 1
+
+Get TEMPNAME basename
+
+
+# First join the relevant data blocks to construct the file table
+
+Goto 0x00
+
+FindLoc SONO_START String "ONOS" 0 ""
+
+Log MEMORY_FILE2 0 0
+
+If SONO_START = ""
+	Break
+Endif
+
+Goto SONO_START
+Get JUNK Long								# "ONOS"
+Get SONO_SIZE Long
+Math TEMP_SIZE = 0
+
+XMath TEMP1 "SONO_START + 0x10"
+Goto TEMP1
+GetDString MISC1 4
+Get JUNK Long
+GetDString MISC2 4
+Get JUNK Long
+Get TOTAL_SIZE Long							# total size of data
+
+If MISC1 = "RDHS" AND MISC2 = "rdhs"						# SDAT that follows is header data for the SAS file
+
+	For
+		FindLoc SONO_START String "ONOS" 0 ""
+		Goto SONO_START
+		Get JUNK Long
+		Get SIZE2 Long
+		Math SONO_START + 0x40
+		Math SIZE2 - 0x40
+		Math TEMP_SIZE + SIZE2
+
+		Append
+		Log MEMORY_FILE2 SONO_START SIZE2
+		Append
+
+		If TEMP_SIZE = TOTAL_SIZE					# header table file is complete in MEMORY_FILE2
+			Break
+		Endif
+
+	Next
+
+Endif
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+# Process file table
+
+Goto 0x38 -2
+Get SECTIONS Long -2
+Get SECTION_OFFS Long -2
+Get TABLE1 Long -2
+Get TABLE1_SIZE Long -2
+
+Goto TABLE1 -2
+
+Math FNUM = 0
+
+For A = 0 < SECTIONS
+	SavePos TEMP1 -2
+
+	Get ENTRIES1 Short -2
+	Get MISC1 Short -2
+
+	For B = 0 < ENTRIES1
+		SavePos ENTRY_OFF -2
+		Get RATE Long -2
+
+		If RATE = 0xFFF
+			Math SAMP_RATE = 44100
+		Elif RATE = 0xEB3
+			Math SAMP_RATE = 32000
+		Elif RATE = 0x7FF
+			Math SAMP_RATE = 22050
+		Else
+			Math SAMP_RATE = 0xFFFFFFFF
+		Endif
+
+		Get JUNK Long -2
+		Get OFFSET Long -2						# 0xFFFFFFFF = not a valid file
+		Get SIZE Long -2
+		Get MISC2 Long -2
+		Get MISC3 Short -2
+		Get CHANNELS Short -2
+		String FILENAME P "%TEMPNAME%_%FNUM%.ss2"
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+		PutVarChr MEMORY_FILE 0x14 0x8000 Long
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		If OFFSET <> 0xFFFFFFFF
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE 1
+			Append
+		Endif
+
+		Math FNUM + 1
+
+	Next B
+
+Next A
+
