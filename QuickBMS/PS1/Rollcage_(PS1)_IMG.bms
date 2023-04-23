@@ -1,0 +1,41 @@
+# ================================================================================
+# Rollcage (PS1)
+# SPEED.IMG extract
+# QuickBMS script by DKDave, 2020
+# ================================================================================
+
+Comtype LEGO_IXS
+
+Goto 4
+Get ENTRIES Long
+Math ENTRIES - 1
+Math ENTRIES / 0x10
+
+Math TABLE = 0x10
+
+For A = 1 To ENTRIES
+	Goto TABLE
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Get MISC1 Long
+
+	String FILENAME P "ROLLCAGE_%A%_%MISC1%"
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		Goto OFFSET
+		Get MISC1 Long
+		Get MISC2 Long						# size - should be same as in file table
+		Get MISC3 Long						# same value as in header
+		Get HEADER_SIZE Long
+		XMath OFFSET2 "OFFSET + 0x10 + HEADER_SIZE"
+		XMath ZSIZE "ZSIZE - HEADER_SIZE - 0x10"
+
+		CLog FILENAME OFFSET2 ZSIZE SIZE
+	Endif
+
+	Math TABLE + 0x10
+Next A
+
