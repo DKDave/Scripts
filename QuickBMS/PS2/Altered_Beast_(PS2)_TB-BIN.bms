@@ -1,0 +1,45 @@
+# ================================================================================
+# Altered Beast (PS2)
+# TB/BIN audio extract (sound effects)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Files are extracted as playable .vag files
+
+
+Open FDDE "BIN" 1
+
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Goto 0xb8
+Get ENTRY Long
+
+Goto ENTRY
+Get FILES Long
+
+For A = 0 < FILES
+	Get OFFSET Long
+	Goto 6 0 SEEK_CUR
+	Get SAMP_RATE Short
+	Get SIZE Long
+
+	ReverseLong SAMP_RATE
+	ReverseLong SIZE
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+	ReverseLong SAMP_RATE
+	ReverseLong SIZE
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+Next A
+
