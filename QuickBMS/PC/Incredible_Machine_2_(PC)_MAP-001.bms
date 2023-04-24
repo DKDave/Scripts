@@ -1,0 +1,25 @@
+# ================================================================================
+# Incredible Machine 2 (PC)
+# MAP/001 archive extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the .MAP file
+# Compressed data within the files is not yet supported
+
+
+Open FDDE "001" 1
+
+Goto 0x13
+Get FILES Short
+
+For A = 0 < FILES
+	Get MISC1 Long
+	Get OFFSET Long
+	Goto OFFSET 1
+	GetDString FILENAME 13 1
+	Get SIZE Long 1
+	SavePos OFFSET 1
+	Log FILENAME OFFSET SIZE 1
+Next A
+
