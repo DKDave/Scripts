@@ -1,0 +1,38 @@
+# ================================================================================
+# LA Noire (PC)
+# File extract (audio and movies)
+# QuickBMS script by DKDave, 2020
+# ================================================================================
+
+Goto -4
+Get FILE_END asize
+Get TEMPNAME filename
+Get FILE_TABLE Long
+XMath FILE_TABLE "FILE_END - FILE_TABLE"
+Goto FILE_TABLE
+Get JUNK Long
+Get ENTRIES Long
+SavePos FILE_ENTRY
+
+For A = 1 To ENTRIES
+	Goto FILE_ENTRY
+	Get FILE_ID Long
+	Get OFFSET Long
+	Math OFFSET * 0x10
+	Get SIZE Long
+
+	If TEMPNAME = "audio.big.pc"
+		String FILENAME P "audio\LA_Noire_%A%.fsb"
+
+	Elif TEMPNAME = "movies.big.pc"
+		String FILENAME P "movies\LA_Noire_%A%.ogg"
+	Else
+		Print "Script not designed for this file."
+		CleanExit
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math FILE_ENTRY + 0x14
+Next A
+

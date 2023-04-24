@@ -1,0 +1,28 @@
+# ================================================================================
+# Second Sight (PC)
+# .PAK extract
+# QuickBMS script by Dave, 2019
+# ================================================================================
+
+IDString "P4CK"
+
+Goto 0x04
+Get FILE_TABLE Long
+Set ENTRY_OFFSET FILE_TABLE
+Get ENTRIES Long
+Math ENTRIES / 0x10	
+
+For A = 1 to ENTRIES
+
+	Goto ENTRY_OFFSET
+	Get FNAME_OFF Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math FNAME_OFF + FILE_TABLE
+	Goto FNAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY_OFFSET + 0x10
+Next A

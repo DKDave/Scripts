@@ -1,0 +1,40 @@
+# ================================================================================
+# Blood & Magic (PC)
+# .MAP / .STF extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+# Use this script on the .MAP file
+
+Open FDDE "STF" 1
+
+Get TEMPNAME basename
+Get ENTRIES asize 
+Math ENTRIES / 0x6f
+Math ENTRY = 0
+
+For A = 1 To ENTRIES
+	Goto ENTRY
+	Get JUNK Long
+	Get JUNK Threebyte
+	Get OFFSET Long
+
+	Goto OFFSET 1
+	Get JUNK Long 1
+	Get JUNK Short 1
+	Get SIZE Long 1
+	Math OFFSET + 0x1c
+	Goto OFFSET 1
+	GetDString FILE_ID 4 1
+
+	If FILE_ID = "RIFF"
+		String FILENAME P "%TEMPNAME%_%A%.wav"
+	Else
+		String FILENAME P "%TEMPNAME%_%A%"
+	Endif
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x6f
+Next A
+

@@ -1,0 +1,36 @@
+# ================================================================================
+# MechWarrior 4
+# .MW4 archive extractor  - from MW4: Vengeance (2000), MW4: Black Knight (2001), MW4: Mercenaries (2002)
+# QuickBMS script by DKDave, 2019
+================================================================================
+
+IDString "#VBD"
+ComType unlzwx
+
+Goto 0x0c
+Get DATA_START Long
+Get ENTRIES Short
+Get JUNK Short
+
+For A = 0 < ENTRIES
+
+	Get JUNK Long
+	Get JUNK Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get FILE_START Long
+	Math FILE_START + DATA_START
+	Get JUNK Short
+	Get FNAME_LEN Byte
+	GetDString FILENAME FNAME_LEN
+
+	If SIZE > ZSIZE
+		CLog FILENAME FILE_START ZSIZE SIZE
+	Else
+		Log FILENAME FILE_START ZSIZE
+	Endif
+
+Next A
+
+
+

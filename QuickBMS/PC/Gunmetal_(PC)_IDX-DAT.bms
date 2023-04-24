@@ -1,0 +1,33 @@
+# ================================================================================
+# Gunmetal (PC, 1998)
+# .IDX / .DAT extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+IDString "BIGFILE\x1a"
+
+Open FDDE "DAT" 1
+
+Get ENTRIES Long
+Get FILE_END asize 1
+
+For A = 1 To ENTRIES
+	GetDString FILENAME 8
+	Get OFFSET Long
+
+	If A < ENTRIES
+		SavePos TEMP1
+		GetDString JUNK 8
+		Get OFFSET2 Long
+		XMath SIZE "OFFSET2 - OFFSET"
+		Goto TEMP1
+	Else
+		XMath SIZE "FILE_END - OFFSET"
+	Endif
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
+
+
+
