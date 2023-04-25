@@ -1,0 +1,62 @@
+# ================================================================================
+# Legacy Of Kain: Soul Reaver (PS1) [SLES_013.01]
+# BIGFILE.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILES Long
+Math TABLE1 = 4
+String KEY = "\x22\xb7"
+
+For A = 0 < FILES
+	Goto TABLE1
+	Get MISC1 Short
+	Get FILES2 Short
+	Get OFFSET Long
+
+	Goto OFFSET
+	Get TEMP1 Long							# Should match count value in main table, otherwise table is encrypted
+	SavePos ENTRY
+
+	For B = 0 < FILES2
+		Goto ENTRY
+
+		If TEMP1 <> FILES2
+			FileXor KEY
+		Else
+			FileXor 0
+		Endif
+
+		Get UNK1 Long						# File ID ?
+		Get SIZE2 Long
+		Get OFFSET2 Long
+		Get UNK2 Long
+
+		FileXor 0
+
+		Goto OFFSET2
+		GetDString TYPE 4
+
+		String FILENAME P "SR_%A%_%B%"
+
+# Some identifiable files types:
+
+		If TYPE = "PMSa"
+			String FILENAME + ".smp"
+		Elif TYPE = "DNSa"
+			String FILENAME + ".snd"
+		Elif TYPE = "FNSa"
+			String FILENAME + ".snf"
+		Elif TYPE = "FMSa"
+			String FILENAME + ".smf"
+		Endif
+
+		Log FILENAME OFFSET2 SIZE2
+
+		Math ENTRY + 0x10
+	Next B
+
+	Math TABLE1 + 8
+Next A
+

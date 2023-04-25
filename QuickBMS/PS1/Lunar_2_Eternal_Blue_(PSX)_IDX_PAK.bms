@@ -1,0 +1,41 @@
+# ================================================================================
+# Lunar 2: Eternal Blue (PSX) [SLUS_010.71]
+# IDX / PAK / UPD extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+# Use this script on the IDX file
+
+
+Open FDDE "PAK" 1
+Open FDDE "UPD" 2
+
+Goto 4 2
+Get ENTRIES Long 2
+GetDString JUNK 8 2
+Get NAMES Long 2
+
+Math ENTRY = 0x18
+
+For A = 0 < ENTRIES
+	Goto ENTRY 2
+	Get NAME_OFF Long 2
+	GetDString JUNK 8 2
+	Get ENTRY_ID Long 2
+	Get SIZE Long 2
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF 2
+	Get FILENAME String 2
+
+	XMath IDX_OFF "ENTRY_ID * 5"
+	Goto IDX_OFF 0
+	Get OFFSET Threebyte 0
+	Math OFFSET << 8
+	ReverseLong OFFSET
+	Math OFFSET * 0x800
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x14
+Next A
+

@@ -1,0 +1,22 @@
+# ================================================================================
+# Ridge Racer 4 (PSX)
+# R4.BIN extract
+# QuickBMS Script by Dave, 2020
+# ================================================================================
+
+Get ENTRIES Long
+Math ENTRY = 4
+
+For A = 1 To ENTRIES
+	Goto ENTRY
+	Get OFFSET Long
+	Get OFFSET2 Long
+	Math OFFSET * 0x800
+	Math OFFSET2 * 0x800
+	XMath SIZE "OFFSET2 - OFFSET"
+	String FILENAME P "R4_BIN_%A%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 4
+Next A

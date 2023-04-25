@@ -1,0 +1,25 @@
+# ================================================================================
+# Legend Of Legaia (PS1)
+# PROT.DAT extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+Goto 4
+Get ENTRIES Long
+Math ENTRIES - 1
+Math ENTRY = 0x0c
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Math SIZE - OFFSET
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+
+	String FILENAME P "LOL_%A%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 4
+Next A

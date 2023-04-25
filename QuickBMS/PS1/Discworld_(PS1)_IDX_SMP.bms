@@ -1,0 +1,40 @@
+# ================================================================================
+# Discworld 1 (PS1)
+# IDX/SMP audio extract
+# QuickBMS script by Dave, 2020
+# ================================================================================
+
+# This script will extract the audio files from ENGLISH.SMP and create playable .vag files
+# Use the script with ENGLISH.IDX
+
+
+Open FDDE "SMP" 1
+
+Set MEMORY_FILE binary "VAGp\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xac\x44\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+Get ENTRIES asize
+Math ENTRIES / 4
+Math FILE_COUNT = 1
+
+For A = 1 to ENTRIES
+	Get OFFSET Long
+
+	If OFFSET <> 0
+		Goto OFFSET 1
+		Get SIZE Long 1
+		SavePos OFFSET 1
+		ReverseLong SIZE
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		ReverseLong SIZE
+
+		String FILENAME P "DW1_%FILE_COUNT%.vag"
+
+		Log FILENAME 0 48 -1
+		Append
+		Log FILENAME OFFSET SIZE 1
+		Append
+
+		Math FILE_COUNT + 1
+	Endif
+
+Next A

@@ -1,0 +1,18 @@
+# ================================================================================
+# Ark Of Time (PSX)
+# .DAT extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+IDString "ARK0"
+
+Get ENTRIES Long
+
+For A = 0 < ENTRIES
+	GetDString FILENAME 8
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Log FILENAME OFFSET SIZE
+Next A
+
