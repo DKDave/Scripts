@@ -1,0 +1,47 @@
+# ================================================================================
+# James Bond 007: Nightfire (PS2)
+# FILES.BIN extract
+# QuickBMS script by DKDave, 2022 (updated 2023) (v2)
+# ================================================================================
+
+# Open the script with ACTION.ELF
+# Each .bin file in the FILES.BIN archive will be extracted into their own separate folders
+
+
+Open FDSE "FILES.BIN" 1
+
+Math ENTRY = 0x13f2a0
+
+For A = 0 < 118
+	Goto ENTRY
+	GetDString FILENAME1 16
+	Get OFFSET Long
+	Get SIZE Long
+	Set EXT extension FILENAME1
+
+	If EXT = "bin"
+		Goto OFFSET 1
+		Get TABLE_SIZE Long 1
+		Get FILES Long 1
+		XMath ENTRY2 "OFFSET + 0x800"
+		XMath OFFSET2 "ENTRY2 + TABLE_SIZE"
+
+		Goto ENTRY2 1
+
+		For B = 0 < FILES
+			Get SIZE2 Long 1
+			Get TYPE Byte 1
+			Get FILENAME2 String 1
+
+			String OUTFILE P "%FILENAME1%\%FILENAME2%"
+
+			Log OUTFILE OFFSET2 SIZE2 1
+
+			Math OFFSET2 + SIZE2
+		Next B
+
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
