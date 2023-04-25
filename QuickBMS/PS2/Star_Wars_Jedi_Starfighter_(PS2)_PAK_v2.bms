@@ -1,0 +1,94 @@
+# ================================================================================
+# Star Wars: Jedi Starfighter (PS2)
+# PAK extract
+# QuickBMS script by Dave, 2020 (Updated 2023) (v2)
+# ================================================================================
+
+# For use with ENGLISH.PAK, RESOURCE.PAK or STREAMS.PAK
+# For STREAMS.PAK, all of the audio is extracted as .ss2 files
+
+
+IDString "Europa Packfile"
+
+Goto 0x15
+Get FILE_TABLE Long
+Get JUNK Long
+Get FILES Long
+Goto FILE_TABLE
+Get TEMPNAME basename
+
+
+If TEMPNAME = "ENGLISH" Or TEMPNAME = "RESOURCE"
+
+	Goto FILE_TABLE
+
+	For A = 1 To FILES
+		Get LEN Byte
+		GetDString FILENAME LEN
+		Get OFFSET Long
+		Get SIZE Long
+		Get MISC1 Long
+		Log FILENAME OFFSET SIZE
+	Next A
+
+Endif
+
+
+If TEMPNAME = "STREAMS"
+
+# Create SS2 header
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0 0x64685353 Long						# SShd
+	PutVarChr MEMORY_FILE 0x04 0x18 Long
+	PutVarChr MEMORY_FILE 0x08 2 Long							# PS ADPCM
+	PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x20 0x64625353 Long						# SSbd
+	PutVarChr MEMORY_FILE 0x24 0 Long							# For data size
+
+	Math ENTRY = FILE_TABLE
+
+	For A = 0 < FILES
+		Goto ENTRY
+		Get LEN Byte
+		GetDString FILENAME LEN
+		String FILENAME R ".scx" ".ss2"
+		Get OFFSET Long
+		Get SIZE Long
+		Get MISC1 Long
+		Get MISC2 Long
+		SavePos ENTRY
+
+		Goto OFFSET
+		Goto 0x18 0 SEEK_CUR
+		GetDString TEMP3 4								# "MONO" or "LEFT"
+		Goto 0x70 0 SEEK_CUR
+		Get AUDIO_SIZE Long							# Size of data for 1 channel
+		ReverseLong AUDIO_SIZE							# From first VAG header
+		Get SAMP_RATE Long
+		ReverseLong SAMP_RATE
+
+		If TEMP3 = "MONO"
+			PutVarChr MEMORY_FILE 0x10 1 Long
+			PutVarChr MEMORY_FILE 0x14 0 Long
+			XMath AUDIO_START "OFFSET + 0xc0"
+		Else
+			PutVarChr MEMORY_FILE 0x10 2 Long
+			PutVarChr MEMORY_FILE 0x14 0x40 Long
+			XMath AUDIO_START "OFFSET + 0x100"
+			Math AUDIO_SIZE * 2
+		Endif
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x24 AUDIO_SIZE Long
+
+		Log FILENAME 0 0x28 -1
+
+		Append
+		Log FILENAME AUDIO_START AUDIO_SIZE
+		Append		
+
+	Next A
+
+Endif
