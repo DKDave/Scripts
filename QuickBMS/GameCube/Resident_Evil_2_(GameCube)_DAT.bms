@@ -1,0 +1,79 @@
+# ================================================================================
+# Resident Evil 2 (GameCube)
+# Extract audio from .dat files
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Notes:
+# Extracted files will be in playable .dsp format
+
+
+Endian Big
+
+Get TEMPNAME basename
+
+Get SIZE1 Long
+
+If SIZE1 = 0x1000000 Or SIZE1 = 0							# Some DAT files are raw PCM16 audio, so ignore those
+	Print "Not a valid DAT file."
+	Exit
+Endif
+
+
+Get SIZE2 Long
+Get SIZE3 Long
+
+XMath TABLE "SIZE1 + SIZE2 + 0x0c"
+XMath AUDIO_DATA "TABLE + SIZE3"
+
+
+# Process standard GameCube audio table
+
+Math ENTRY = TABLE
+
+For A = 0
+	Goto ENTRY
+	Get ID Short
+
+	If ID = 0xFFFF
+		Break
+	Endif
+
+	Get JUNK Short
+	Get OFFSET Long
+	Math OFFSET + AUDIO_DATA
+
+	Goto 6 0 SEEK_CUR
+	Get SAMP_RATE Short
+	Get TYPE Byte
+	Get SAMP_COUNT Threebyte
+	XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"
+	XMath NIB_COUNT "SIZE * 2"
+	Goto 8 0 SEEK_CUR
+	Get COEFF_OFF Long
+	Math COEFF_OFF + TABLE
+	Math COEFF_OFF + 8
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+	Append
+	Log MEMORY_FILE COEFF_OFF 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	String FILENAME P "%TEMPNAME%_%ID%.dsp"
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x20
+Next A
