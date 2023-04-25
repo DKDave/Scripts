@@ -1,0 +1,78 @@
+# ================================================================================
+# Bomberman Jetters (GameCube)
+# Audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Notes:
+# Use this script file.bin and make sure the jetters.samp file is in the same folder
+# This script will work for both the USA and Japanese versions of the game
+# Extracted files will be in playable .dsp format
+
+
+Endian Big
+
+Get TEMPNAME basename
+Open FDSE "jetters.samp" 1
+Get BIN_SIZE asize
+
+If BIN_SIZE = 134164480
+	Math TABLE = 0x7e000						# USA
+
+Elif BIN_SIZE = 132380672
+	Math TABLE = 0x7e800						# Japan
+
+Else
+	Print "Unknown file.bin."
+	CleanExit
+Endif
+
+Math ENTRY = TABLE
+
+
+# Process standard GameCube audio table
+
+For A = 0
+	Goto ENTRY
+	Get ID Short
+
+	If ID = 0xFFFF
+		Break
+	Endif
+
+	Get JUNK Short
+	Get OFFSET Long
+	Goto 6 0 SEEK_CUR
+	Get SAMP_RATE Short
+	Get TYPE Byte							# 0 = DSP
+	Get SAMP_COUNT Threebyte
+	XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"				# actual data size
+	XMath NIB_COUNT "SIZE * 2"
+	Goto 8 0 SEEK_CUR
+	Get COEFF_OFF Long
+	Math COEFF_OFF + TABLE
+	Math COEFF_OFF + 8
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+	Append
+	Log MEMORY_FILE COEFF_OFF 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	String FILENAME P "%ID%.dsp"
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x20
+Next A
+
