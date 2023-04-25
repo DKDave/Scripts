@@ -1,0 +1,42 @@
+# ================================================================================
+# Contra: Shattered Soldier (PS2)
+# FILEDATA.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Math TABLE = 0x1000
+Get END asize
+
+For A = 0
+	Goto TABLE
+	Get MISC1 Long
+
+	If MISC1 = 0x544f4f42
+		Break
+	Endif
+
+	Get JUNK Long
+	Get TABLE_SIZE Long
+	Get JUNK Long
+	Get FILES Long
+	Get ENTRY Long
+	Math ENTRY + TABLE
+
+	For B = 0 < FILES
+		Goto ENTRY
+		Get ID Long
+		Get TYPE Long								# Only 0 or 2 ?
+		Get OFFSET Long
+		Math OFFSET + ENTRY							# Data is relative to the start of its entry in file table
+		Get SIZE Long
+
+		String FILENAME P "FILEDATA_%A%_%B%"
+		Log FILENAME OFFSET SIZE
+
+		Math ENTRY + 0x10
+	Next B
+
+	Math TABLE + TABLE_SIZE
+Next A
+

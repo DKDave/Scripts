@@ -1,0 +1,41 @@
+# ================================================================================
+# Contra: Shattered Soldier (PS2)
+# PAL_SD.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# This archive contains music and instrument/sequence data
+
+
+IDString "TYOSD v-1.01"
+
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+
+	Goto OFFSET
+	GetDString TYPE 4
+
+	String FILENAME P "PAL_%A%"
+
+	If TYPE = "IECS"
+		String FILENAME + ".hd"
+	Elif TYPE = "SdDt"
+		String FILENAME + ".sddt"
+	Elif TYPE = "Svag"
+		String FILENAME + ".svag"
+	Else
+		String FILENAME + ".bd"
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 8
+Next A
+
+
