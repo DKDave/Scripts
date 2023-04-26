@@ -1,0 +1,42 @@
+# ================================================================================
+# Condemned: Criminal Origins (XBox 360)
+# ,ARch00 extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype zlib
+
+Endian Big
+
+Goto 8
+Get NAMES_SIZE Long
+Get COUNT1 Long
+Get COUNT2 Long
+Math NAMES = 0x30
+
+XMath ENTRY "NAMES_SIZE + NAMES"
+
+For A = 0 < COUNT2
+	Goto ENTRY
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get OFFSET LongLong
+	Get ZSIZE LongLong
+	Get SIZE LongLong
+	Get FLAG Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If FLAG = 1
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		If ZSIZE > 0
+			Log FILENAME OFFSET ZSIZE
+		Endif
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
+
