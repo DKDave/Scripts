@@ -1,0 +1,49 @@
+# ================================================================================
+# Gungrave (PS2)
+# .BIN audio extract (from SE folder)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get OFFSET Long
+	Get SAMP_RATE Long
+
+	If OFFSET = 0xFFFFFFFF
+		Break
+	Endif
+
+	If SAMP_RATE <> 0
+		ReverseLong SAMP_RATE
+		PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+
+		Goto OFFSET
+		Get SIZE Threebyte
+		Get MISC1 Byte
+		GetDString NAME 0x10
+		SavePos OFFSET
+		ReverseLong SIZE
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		ReverseLong SIZE
+
+		String FILENAME P "%TEMPNAME%_%A%.vag"
+
+		Log FILENAME 0 0x30 -1
+		Append
+		Log FILENAME OFFSET SIZE
+		Append
+
+	Endif
+
+	Math ENTRY + 8
+Next A
+
