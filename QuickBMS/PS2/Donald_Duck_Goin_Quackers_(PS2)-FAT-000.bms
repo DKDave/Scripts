@@ -1,0 +1,65 @@
+# ================================================================================
+# Donald Duck: Goin' Quackers (PS2)
+# FAT/000 extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the .FAT files
+
+
+Comtype lzo1x
+
+Open FDDE "000" 1
+
+Get END asize
+
+Math ENTRY = 1
+
+For A = 0
+	If ENTRY = END
+		Break
+	Endif
+
+	Goto ENTRY
+	Get LOC Long
+	Get OFFSET Long										# 1 = folder
+	Get TOTAL_SIZE Long									# size of all uncompressed parts
+	Get TOTAL_ZSIZE Long									# size of all compressed parts (without headers)
+	Goto 0x10 0 SEEK_CUR
+	Get LEN Long
+	GetDString FILENAME LEN
+	SavePos ENTRY
+
+	If OFFSET <> 1
+		Log MEMORY_FILE 0 0
+
+		For B = 0
+			Goto OFFSET 1
+			Get SIZE Long 1
+			Get ZSIZE Long 1
+			Goto 8 1 SEEK_CUR								# Skip "BEBAADDE0341e866"
+			SavePos OFFSET 1
+
+			If ZSIZE = SIZE
+				Append
+				Log MEMORY_FILE OFFSET ZSIZE 1
+				Append
+			Else
+				Append
+				CLog MEMORY_FILE OFFSET ZSIZE SIZE 1
+				Append
+			Endif
+
+			Math OFFSET + ZSIZE
+			Get MEM_SIZE asize -1
+
+			If MEM_SIZE = TOTAL_SIZE
+				Log FILENAME 0 TOTAL_SIZE -1
+				Break
+			Endif
+		Next B
+
+	Endif
+
+Next A
+
