@@ -1,0 +1,108 @@
+# ================================================================================
+# Mass Effect (XBox 360)
+# ISB audio extract
+# QuickBMS script by DKDave, 2023
+# Generates .xma files with an XMA1 RIFF/WAVE header
+# ================================================================================
+
+IDString "RIFF"
+
+
+# Setup RIFF/WAVE header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 59 0								# XMA1 header is 60 bytes
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long						# RIFF
+PutVarChr MEMORY_FILE 8 0x45564157 Long						# WAVE
+PutVarChr MEMORY_FILE 12 0x20746d66 Long						# fmt
+PutVarChr MEMORY_FILE 16 0x20 Long							# fmt size for XMA1
+PutVarChr MEMORY_FILE 52 0x61746164 Long						# data
+
+Get TEMPNAME basename
+
+For A = 0
+	FindLoc OFFSET String "LIST" 0 ""
+
+	If OFFSET = ""								# No more LIST sections
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long
+	Get LIST_SIZE Long
+	GetDString LIST_TYPE 4							# "bfob" or "samp"
+
+	If LIST_TYPE = "samp"								# audio data (ignore "bfob" LIST types)
+		XMath LIST_END "OFFSET + 8 + LIST_SIZE"
+		XMath CHUNK_START "OFFSET + 12"
+
+		For
+			If CHUNK_START = LIST_END					# end of this LIST segment
+				Break
+			Endif
+
+			Goto CHUNK_START
+			GetDString CHUNK_NAME 4
+			Get CHUNK_SIZE Long
+
+			If CHUNK_NAME = "titl"
+				Get FILENAME UNICODE
+			Endif
+
+			If CHUNK_NAME = "data"
+				XMath AUDIO_START "CHUNK_START + 0x28"
+				XMath AUDIO_SIZE "CHUNK_SIZE - 0x20"
+
+				Endian Big
+				Get XMA_TYPE Short
+				Get XMA_BITS Short
+				Get XMA_ENCODE Short
+				Get XMA_SKIP Short
+				Get XMA_STREAMS Short
+				Get XMA_LOOP Byte
+				Get XMA_VER Byte
+				Get XMA_PSEUDO Long
+				Get XMA_RATE Long
+				Get XMA_LOOP1 Long
+				Get XMA_LOOP2 Long
+				Get XMA_SUB Byte
+				Get XMA_CHANNELS Byte
+				Get XMA_MASK Short
+				Endian Little
+
+				XMath RIFF_SIZE "AUDIO_SIZE + 52"
+
+				String FILENAME P "%TEMPNAME%\%FILENAME%"
+				String FILENAME R ".wav" ".xma"
+				PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+				PutVarChr MEMORY_FILE 0x14 XMA_TYPE Short
+				PutVarChr MEMORY_FILE 0x16 XMA_BITS Short
+				PutVarChr MEMORY_FILE 0x18 XMA_ENCODE Short
+				PutVarChr MEMORY_FILE 0x1a XMA_SKIP Short
+				PutVarChr MEMORY_FILE 0x1c XMA_STREAMS Short
+				PutVarChr MEMORY_FILE 0x1e XMA_LOOP Byte
+				PutVarChr MEMORY_FILE 0x1f XMA_VER Byte
+				PutVarChr MEMORY_FILE 0x20 XMA_PSEUDO Long
+				PutVarChr MEMORY_FILE 0x24 XMA_RATE Long
+				PutVarChr MEMORY_FILE 0x28 XMA_LOOP1 Long
+				PutVarChr MEMORY_FILE 0x2C XMA_LOOP2 Long
+				PutVarChr MEMORY_FILE 0x30 XMA_SUB Byte
+				PutVarChr MEMORY_FILE 0x31 XMA_CHANNELS Byte
+				PutVarChr MEMORY_FILE 0x32 XMA_MASK Short
+				PutVarChr MEMORY_FILE 0x38 AUDIO_SIZE Long
+				Log FILENAME 0 60 -1
+
+				Append
+				Log FILENAME AUDIO_START AUDIO_SIZE
+				Append
+
+			Endif
+
+			XMath CHUNK_START "CHUNK_START + CHUNK_SIZE + 8"
+		Next
+
+	Endif
+
+Next A
+

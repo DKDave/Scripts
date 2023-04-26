@@ -1,0 +1,39 @@
+# ================================================================================
+# Mass Effect 2 (XBox 360)
+# AFC audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+Endian Big
+
+Get FILE_END asize
+Math OFFSET = 0
+Get TEMPNAME basename
+Math A = 1
+
+For A
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long							# RIFX
+	Get SIZE Long
+	GetDString JUNK 8
+	Get FMT_SIZE Long
+
+	If FMT_SIZE = 0x34
+		ReverseLong SIZE						# XMA files have RIFF size as little endian
+	Else
+		Math SIZE + 8
+	Endif
+
+	String FILENAME P "%TEMPNAME%_%A%.wem"				# Wwise audio files
+
+	Log FILENAME OFFSET SIZE
+
+	Math OFFSET + SIZE
+
+Next A
+
+

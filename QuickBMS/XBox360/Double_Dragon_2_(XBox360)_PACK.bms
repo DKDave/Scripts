@@ -1,0 +1,36 @@
+# ================================================================================
+# Double Dragon 2: Wander Of The Dragons (XBox 360)
+# PACK Extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+Endian Big
+Comtype xmemlzx
+
+IDString "GOLF1.02"
+
+Goto 0x0c
+Get ENTRIES Long
+
+Goto 0x1b
+
+For A = 0 < ENTRIES
+	Get TEXT_LEN Byte
+	GetDString FILENAME TEXT_LEN
+	Get OFFSET Long
+	Get ZSIZE Long
+	GetDString JUNK 8
+	GetDString COMP_TYPE 4
+	Get SIZE Long
+	GetDString JUNK 11
+
+	If COMP_TYPE = "xlzw"
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+Next A
+
+
+
