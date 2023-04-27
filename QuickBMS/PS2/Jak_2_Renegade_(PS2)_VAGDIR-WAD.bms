@@ -1,0 +1,36 @@
+# ================================================================================
+# Jak II: Renegade (PS2)
+# VAGDIR / VAGWAD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the VAGDIR file
+
+
+Open FDSE "VAGWAD.ENG" 1
+
+Get FILES Long
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 8
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get CHANNELS Long
+	Goto OFFSET 1
+	Goto 0x0c 1 SEEK_CUR
+	Get SIZE Long 1
+
+	If CHANNELS = 1
+		Math SIZE + 0x2000
+	Endif
+
+	String FILENAME R " " ""
+	String FILENAME + ".vag"
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x10
+Next A
+
