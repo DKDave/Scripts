@@ -1,0 +1,35 @@
+# ================================================================================
+# Krome Studios RKV extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Tested on the following games:
+
+# Legend Of Spyro: A New Beginning (PS2, 2006)
+# Legend Of Spyro: The Eternal Night (PS2, 2007)
+# Star Wars: The Force Unleashed (PS2, 2008)
+
+
+IDString "RKV2"
+
+Get FILES Long
+
+Goto 0x14
+Get ENTRY Long
+XMath NAMES "ENTRY + (FILES * 0x14)"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get JUNK Long
+	Get SIZE Long
+	Get OFFSET Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x14
+Next A
+
