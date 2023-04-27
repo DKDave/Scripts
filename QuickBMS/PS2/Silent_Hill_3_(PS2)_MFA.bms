@@ -1,0 +1,56 @@
+# ================================================================================
+# Silent Hill 3 (PS2)
+# MFA archive extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+Get END asize
+Math TABLE = 0
+
+For A = 0
+	If TABLE = END
+		Break
+	Endif
+
+	Goto TABLE
+
+	FindLoc TEMP String "\x0c\x0a\x20\x20\x20" "" 0
+	Goto TEMP
+	GetDString JUNK 6
+	Padding 8
+
+	Get FILES Long
+	Get TOTAL_SIZE Long
+	SavePos ENTRY
+
+	Goto ENTRY
+	Get TEMP Long
+	Math TEMP + TABLE
+	Goto TEMP
+	Get TEST String
+	Padding 4
+	SavePos DATA_START
+
+	For B = 0 < FILES
+		Goto ENTRY
+		Get NAME_OFF Long
+		Math NAME_OFF + TABLE
+		Get OFFSET Long
+		Math OFFSET + DATA_START
+		Get JUNK Long
+		Get SIZE Long
+		Goto NAME_OFF
+		Get FILENAME String
+
+		Log FILENAME OFFSET SIZE
+
+		Math ENTRY + 0x10
+	Next B
+
+	Math TABLE = DATA_START
+	Math TABLE + TOTAL_SIZE
+
+Next A
+
