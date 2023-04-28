@@ -1,0 +1,30 @@
+# ================================================================================
+# Jak And Daxter: The Precursor Legacy (PS2)
+# VAGDIR / VAGWAD extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+# Use this script on the VAGDIR.AYB file
+
+
+Open FDSE "VAGWAD.ENG" 1
+
+Get ENTRIES Long
+
+For A = 0 < ENTRIES
+	GetDString FILENAME 8
+	String FILENAME R " " ""
+	String FILENAME + ".vag"
+
+	Get OFFSET Long
+	Math OFFSET * 0x800
+
+	Goto OFFSET 1
+	GetDString JUNK 12 1
+	Get SIZE Long 1
+	ReverseLong SIZE
+	Math SIZE + 0x20
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
