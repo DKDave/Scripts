@@ -1,0 +1,38 @@
+# ================================================================================
+# Comanche 3 (PC, 1997)
+# RESOURCE.RES extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "RESOURCE2xxx"
+
+Get FILES Long
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Goto 12 0 SEEK_CUR
+	Get OFFSET Long
+	Math OFFSET + 0x14
+	Get SIZE Long
+
+	Goto OFFSET
+	GetDString TYPE 4
+
+	String FILENAME P "C3_%A%"
+
+	If TYPE = "RIFF"
+		String FILENAME + ".wav"
+	Elif TYPE = "LZP1"
+		String FILENAME + ".lzp"
+	Elif TYPE = "3DO1"
+		String FILENAME + ".3do1"
+	Elif TYPE = "MThd"
+		String FILENAME + ".mid"
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x14
+Next A

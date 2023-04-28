@@ -1,0 +1,46 @@
+# ================================================================================
+# Conflict: Desert Storm (PC)
+# ,dat extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+
+Get TEMPNAME basename
+
+Math A = 0
+Math ENTRY = 0
+
+For A
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	If MISC1 = 0
+		Break
+	Endif
+
+	Goto OFFSET
+	Get FILE_TYPE Long
+
+	String FILENAME P "%TEMPNAME%\%TEMPNAME%_%A%"
+
+	If FILE_TYPE = 0x4a424f45
+		String FILENAME + ".eobj"
+	Elif FILE_TYPE = 0x434f4c53
+		String FILENAME + ".sloc"
+	Elif FILE_TYPE = 0x20534444
+		String FILENAME + ".dds"
+	Elif FILE_TYPE = 0x474e5089
+		String FILENAME + ".png"
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x0c
+Next A
+
+
+
+
+
