@@ -1,0 +1,78 @@
+# ================================================================================
+# F1 Racing Championship (PS2, 2001)
+# SH/SB/SS audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the .SH files
+# Extracted files will be in .ss2 format and can be played in Foobar/vgmstream
+
+
+Open FDDE "sb" 1 EXISTS
+Open FDDE "ss" 2 EXISTS2
+
+Get TEMPNAME basename
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long							# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long								# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long							# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Goto 8
+Get FILES Long
+Math ENTRY = 0xc
+XMath END "(FILES * 0x28) + 0x0c"
+
+For A = 0
+	If ENTRY = END
+		Break
+	Endif
+
+	Goto ENTRY
+	Get CHANNELS Long								# 0 = mono, 5 = stereo
+	Get JUNK Short
+	Get FLAGS Short									# bit 2 = use SB or SS files
+	Get SAMP_RATE Long
+	Get MISC3 Long
+	Get SIZE Long
+	Get MISC4 Long
+	Get OFFSET Long
+	Get MISC5 Long
+	Get MISC6 Long
+	Get MISC7 Float
+
+	String FILENAME P "%TEMPNAME%_%A%.ss2"
+
+	If CHANNELS = 0
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long
+	Else
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 0x800 Long
+	Endif
+
+	PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	If OFFSET <> 0xFFFFFFFF
+		If FLAGS & 0x4								# bit 2: 0 = SB file, 1 = SS file
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE 2						# From SS file
+			Append
+		Else
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE 1						# From SB file
+			Append
+		Endif
+	Endif
+
+	Math ENTRY + 0x28
+Next A
