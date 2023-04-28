@@ -1,0 +1,29 @@
+# ================================================================================
+# Prince Of Persia: Sands Of Time (PS2)
+# .FAT/.BIG extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+Open FDDE "BIG" 1
+
+Get END asize
+Math ENTRY = 0
+
+For A = 0
+	If ENTRY = END
+		Break
+	Endif
+
+	Goto ENTRY
+	Get JUNK Long
+	Get OFFSET Long
+	Get SIZE Long
+	Get JUNK Long
+	Get JUNK Long
+	Get FILENAME String	
+	SavePos ENTRY
+
+	Log FILENAME OFFSET SIZE 1
+Next A
+
+
