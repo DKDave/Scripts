@@ -1,0 +1,45 @@
+# ================================================================================
+# State Of Emergency (XBox)
+# .sbh / .sbk audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "sbk" 1
+
+Get TEMPNAME basename
+Get FILES Long
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString JUNK 0x14
+	SavePos WAV_INFO
+	GetDString JUNK 0x14
+	Get OFFSET Long
+	Get SIZE Long
+
+	Set MEMORY_FILE binary "RIFF\x00\x00\x00\x00WAVEfmt \x14\x00\x00\x00"
+
+	Append
+	Log MEMORY_FILE WAV_INFO 0x14
+	Append
+
+	PutVarChr MEMORY_FILE 0x28 0x61746164 Long					# "data"
+	PutVarChr MEMORY_FILE 0x2c SIZE Long
+	XMath RIFF_SIZE "SIZE + 0x28"
+	PutVarChr MEMORY_FILE 0x04 RIFF_SIZE Long
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1						# audio data from .sbk file
+	Append
+
+	String FILENAME P "%TEMPNAME%_%A%.wav"
+	Get FINAL_SIZE asize -1
+	Log FILENAME 0 FINAL_SIZE -1
+
+	Math ENTRY + 0x5c
+Next A
+
+
+
