@@ -1,0 +1,38 @@
+# ================================================================================
+# Test Drive Off-Road Wide Open (PS2)
+# ZIP extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+
+Comtype deflate
+
+IDString "DAVE"
+
+Get ENTRIES Long
+Get TABLE1_SIZE Long
+Get NAMES_SIZE Long
+
+XMath NAMES "TABLE1_SIZE + 0x800"
+Math ENTRY = 0x800
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If ZSIZE <> SIZE
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+	Math ENTRY + 0x10
+Next A
+
+
