@@ -1,0 +1,28 @@
+# ================================================================================
+# Eve Of Extinction (PS2)
+# .ADV audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "ADV_"
+
+Get TEMPNAME basename
+Get FILES Long
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get MISC1 Long						# Size in blocks, not needed
+	Math OFFSET * 0x800
+	Goto OFFSET
+	Goto 0x24 0 SEEK_CUR
+	Get SIZE Long
+	Math SIZE + 0x28
+
+	String FILENAME P "%TEMPNAME%_%A%.ss2"
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 8
+Next A
+
