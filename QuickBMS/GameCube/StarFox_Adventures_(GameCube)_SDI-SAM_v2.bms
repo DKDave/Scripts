@@ -1,0 +1,61 @@
+# ================================================================================
+# Star Fox Adventures (GameCube)
+# Extract audio from SDI/SAM files (sound effects)
+# QuickBMS script by DKDave, 2022 (Updated 2023) (v2)
+# ================================================================================
+
+# This script will extract the audio from the .SAM archives and create playable .DSP files
+
+
+Endian Big
+
+Open FDDE "sam" 1
+Get TEMPNAME basename
+
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get ID Short
+
+	If ID = 0xFFFF
+		Break
+	Endif
+
+	Get JUNK Short
+	Get OFFSET Long
+	Goto 6 0 SEEK_CUR
+	Get SAMP_RATE Short
+	Get TYPE Byte
+	Get SAMP_COUNT Threebyte
+	XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"
+	XMath NIB_COUNT "SIZE * 2"
+	Goto 8 0 SEEK_CUR
+	Get COEFF_OFF Long
+	Math COEFF_OFF + TABLE
+	Math COEFF_OFF + 8
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+	Append
+	Log MEMORY_FILE COEFF_OFF 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	String FILENAME P "%ID%.dsp"
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x20
+Next A
+
+
