@@ -1,0 +1,45 @@
+# ================================================================================
+# Colin McRae Dirt 2 (PSP)
+# DATA.PSP extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+Comtype zlib
+
+Get TEMPNAME basename
+Get ENTRIES Long
+
+Goto 0x10
+
+For A = 0 < ENTRIES
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+
+	If ZSIZE = SIZE
+		Log MEMORY_FILE OFFSET SIZE
+	Else
+		CLog MEMORY_FILE OFFSET ZSIZE SIZE
+	Endif
+
+	Goto 0 -1
+	GetDString TYPE 4 -1
+	String FILENAME P "%TEMPNAME%_%A%"
+
+# Guess a few file types
+
+	If TYPE = "RIFF"
+		String FILENAME + ".wav"
+	Elif TYPE = "PTEX"
+		String FILENAME + ".ptex"
+	Elif TYPE = "RELO"
+		String FILENAME + ".relo"
+	Endif
+
+	Log FILENAME 0 SIZE -1
+
+Next A
+
+
+
