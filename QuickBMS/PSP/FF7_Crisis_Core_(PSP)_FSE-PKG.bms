@@ -1,0 +1,75 @@
+# ================================================================================
+# Final Fantasy 7: Crisis Core (PSP)
+# .fse / .pkg extract
+# QuickBMS script by DKDave, 2020
+# ================================================================================
+
+# Use this script on the .fse file
+# Some files are identified, most are unknown
+
+
+Open FDDE "pkg" 1
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Get FILES asize
+Math FILES / 12
+
+Math ENTRY = 0
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Math OFFSET * 0x800
+
+	If SIZE <> 0
+		Goto OFFSET 1
+		GetDString TYPE 4 1
+		String FILENAME P "CC_%A%"
+
+		If TYPE = "RIFF"
+			String FILENAME + ".at3"					# Audio
+		Elif TYPE = "PSMF"
+			String FILENAME + ".pmf"					# Video
+		Endif
+
+		If TYPE = "SSCF"							# VAG archives
+			Goto OFFSET 1
+			Goto 0x0c 1 SEEK_CUR
+			Get COUNT Long 1
+			Goto 0x10 1 SEEK_CUR
+
+			For B = 0 < COUNT
+				Get JUNK Long 1
+				Get OFFSET2 Long 1
+				Get SIZE2 Long 1
+				Get SAMP_RATE Short 1
+				Math OFFSET2 + OFFSET
+				Goto 0x12 1 SEEK_CUR
+
+				Endian Big
+				PutVarChr MEMORY_FILE 0x0c SIZE2 Long
+				PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+				Endian Little
+
+				String FILENAME P "CC_%A%_%B%.vag"
+
+				If SAMP_RATE > 0
+					Log FILENAME 0 0x30 -1
+					Append
+					Log FILENAME OFFSET2 SIZE2 1
+					Append
+				Endif
+			Next B
+		Else
+			Log FILENAME OFFSET SIZE 1
+		Endif
+	Endif
+
+	Math ENTRY + 12
+Next A
+
