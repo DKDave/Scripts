@@ -1,0 +1,24 @@
+# ================================================================================
+# Kingdom Hearts: Birth By Sleep (PSP)
+# .SCD extract
+# QuickBMS script by DKDave, 2020
+# ================================================================================
+
+For A = 0
+	FindLoc OFFSET String "SEDBSSCF" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	GetDString JUNK 0x8
+	Get TYPE Long
+	Get JUNK Long
+	Get SIZE Long
+
+	String FILENAME P "BBS_%A%.scd"
+
+	Log FILENAME OFFSET SIZE
+Next A
+
