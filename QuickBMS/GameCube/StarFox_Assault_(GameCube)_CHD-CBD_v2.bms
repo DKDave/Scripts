@@ -1,0 +1,50 @@
+# ================================================================================
+# Star Fox Assault (GameCube)
+# CHD/CBD audio extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+# Notes:
+# Use with the .CHD file, the .CBD data file will be automatically detected
+# Some CBD data files are blank and will be ignored
+
+
+Endian Big
+
+IDString "CHDp"
+
+Open FDDE "cbd" 1
+
+Get TEMPNAME basename
+Get CBD_SIZE asize 1
+
+If CBD_SIZE = 0
+	Print "CBD data is empty - nothing to extract."
+	Exit
+Endif
+
+Goto 0x08
+Get FILES Short
+Get JUNK Short
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Goto 0x4c 0 SEEK_CUR
+	SavePos DSP_HEADER
+	Get SAMP_COUNT Long
+	XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"					# Data size
+
+	Log MEMORY_FILE DSP_HEADER 0x60
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	String FILENAME P "%TEMPNAME%_%A%.dsp"
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0xb0
+Next A
+
