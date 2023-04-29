@@ -1,0 +1,32 @@
+# ================================================================================
+# Metal Gear Solid: Peace Walker (PSP)
+# .PDT extract (for the files VOICEBF.PDT, VOICEPS.PDT, VOICERT.PDT)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get ENCRYPT_BYTE Byte
+FileXor ENCRYPT_BYTE 0x0c
+
+Goto 0x18
+Get FILES Short
+Math ENTRY = 0x20
+Get TEMPNAME basename
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get JUNK Long
+	Get JUNK Long
+	Get OFFSET Long
+
+	Goto OFFSET
+	Goto 0x50 0 SEEK_CUR
+	Get SIZE Long
+	SavePos OFFSET
+
+	String FILENAME P "%TEMPNAME%_%A%.at3"
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 12
+Next A
+
