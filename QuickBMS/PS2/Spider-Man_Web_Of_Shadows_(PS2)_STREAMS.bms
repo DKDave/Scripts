@@ -1,0 +1,43 @@
+# ================================================================================
+# Spider-Man: Web Of Shadows (PS2)
+# STREAMS.RES extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "res"
+
+Goto 0x0c
+Get TABLE1 Long
+Goto 0x14
+Get DATA_START Long
+Get JUNK Long
+Get DIR_SIZE Long
+XMath ENTRY "TABLE1 + DIR_SIZE"
+
+Goto ENTRY
+Get FILES Long
+Get JUNK Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	GetDString TYPE 4
+	Get INFO_OFF Long	
+	Math NAME_OFF + ENTRY
+	Math INFO_OFF + ENTRY
+	Math INFO_OFF + 8
+	Goto NAME_OFF
+	Get FILENAME String
+	Goto INFO_OFF
+	Goto 8 0 SEEK_CUR
+	Get SIZE Long
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+
+	String FILENAME + ".fsb"
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x0c
+Next A
+
