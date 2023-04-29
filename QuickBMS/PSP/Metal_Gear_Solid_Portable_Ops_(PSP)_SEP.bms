@@ -1,0 +1,71 @@
+# ================================================================================
+# Metal Gear Solid: Portable Ops (PSP)
+# .SEP audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Output files are in .at3 and .vag format and can be played in Foobar/vgmstream
+
+
+IDString "SP"
+
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Goto 8
+Get TABLE Long
+Get DATA1 Long								# Offsets of PS ADPCM data
+Get DATA2 Long								# Start of PS ADPCM files
+Get DATA3 Long								# Start of RIFF/WAVE data
+Get DATA4 Long								# Some other data
+XMath FILES "(DATA1 - TABLE) / 0x20"
+
+For A = 0 < FILES
+	Goto TABLE
+	Goto 6 0 SEEK_CUR
+	Get IDX Short							# Which DATA section to use (0 = RIFF files, 1 = PS ADPCM, 2 = other data)
+	Get OFFSET Long							# Offset within DATA section (0xFFFFFFFF not a valid file)
+
+	String FILENAME P "%TEMPNAME%_%A%"
+
+	If OFFSET <> 0xFFFFFFFF
+
+		If IDX = 0							# AT3
+			Math OFFSET + DATA3
+			Goto OFFSET
+			Get SIZE Long
+			SavePos OFFSET
+			String FILENAME + ".at3"
+			Log FILENAME OFFSET SIZE
+
+		Elif IDX = 1						# PS ADPCM
+			Math OFFSET + DATA1				# Offset table
+			Goto OFFSET
+			Get OFFSET2 Long
+			Math OFFSET2 + DATA2				# Actual start of file data
+			Goto OFFSET2
+			Get SIZE Long
+			Get MISC1 Short
+			Get SAMP_RATE Short
+			SavePos OFFSET2
+
+			Endian Big
+			PutVarChr MEMORY_FILE 0xc SIZE Long
+			PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+			Endian Little
+
+			String FILENAME + ".vag"
+			Log FILENAME 0 0x30 -1
+			Append
+			Log FILENAME OFFSET2 SIZE
+			Append
+
+		Endif
+	Endif
+
+	Math TABLE + 0x20
+Next A
+
