@@ -1,7 +1,7 @@
 # ================================================================================
 # The Guild: Gold Edition (PC)
 # .SBF audio extract
-# QuickBMS script by DKDave, 2023
+# QuickBMS script by DKDave, 2023 (v2)
 # ================================================================================
 
 # Filenames are not yet read from the .sdf files
@@ -15,25 +15,38 @@ Math ENTRY = 0x144
 For A = 0 < FILES
 	Goto ENTRY
 	Get OFFSET Long
-	GetDString FILENAME 0x3c
+	GetDString FILENAME 0x32
+	Get ENTRY_TYPE Short							# 1 = 1 file, 2 = multiple files
 	Goto OFFSET
-	Get FILES2 Long
-	XMath OFFSET2 "OFFSET + (FILES2 * 0x0c) + 12"
-	Goto 8 0 SEEK_CUR
 
-	SavePos ENTRY2
-
-	For B = 0 < FILES2
-		Goto ENTRY2
+	If ENTRY_TYPE = 1
 		Get MISC1 Long
 		Get SIZE Long
 		Get MISC2 Long
+		SavePos OFFSET2
 		String FILENAME2 P "%FILENAME%_%B%.wav"
 		Log FILENAME2 OFFSET2 SIZE
 
-		Math OFFSET2 + SIZE
-		Math ENTRY2 + 12
-	Next B
+	ElIf ENTRY_TYPE = 2
+		Get FILES2 Long
+		XMath OFFSET2 "OFFSET + (FILES2 * 0x0c) + 12"
+		Goto 8 0 SEEK_CUR
+
+		SavePos ENTRY2
+
+		For B = 0 < FILES2
+			Goto ENTRY2
+			Get MISC1 Long
+			Get SIZE Long
+			Get MISC2 Long
+			String FILENAME2 P "%FILENAME%_%B%.wav"
+			Log FILENAME2 OFFSET2 SIZE
+
+			Math OFFSET2 + SIZE
+			Math ENTRY2 + 12
+		Next B
+
+	Endif
 
 	Math ENTRY + 0x40
 Next A
