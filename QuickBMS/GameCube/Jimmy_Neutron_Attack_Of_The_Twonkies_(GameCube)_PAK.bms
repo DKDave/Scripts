@@ -1,0 +1,92 @@
+# ================================================================================
+# Jimmy Neutron: Attack Of The Twonkies (GameCube)
+# PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# This script will extract all of the files in a .PAK archive.  Audio archives within the pak file will be extracted as separate .dsp files in an "audio" folder
+
+
+Endian Big
+
+IDString "pack"
+
+Goto 0x10
+Get NAMES Long
+Get FILES Long
+
+Math ENTRY = 0x18
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Goto OFFSET
+	GetDString FILE_ID 4
+
+	If FILE_ID = "gcsp"
+		Goto OFFSET
+		GetDString JUNK 0x0c
+		Get JUNK Long
+		Get JUNK Long
+		Get COUNT1 Long								# entries in file table
+		Get COUNT2 Long								# entries in name offset table
+		XMath ENTRY2 "(COUNT1 * 0x44) + 0x1c + OFFSET"
+		XMath NAMES2 "ENTRY2 + (COUNT2 * 0x1c)"
+
+		For B = 0 < COUNT2
+			Goto ENTRY2
+			Get NAME_OFF2 Long
+			Get FILE_IDX Long							# Data file to use for this filename
+			Math NAME_OFF2 + NAMES2
+			Goto NAME_OFF2
+			Get FILENAME2 String
+			String FILENAME2 - ".wav"
+			String FILENAME2 P "audio\%FILENAME2%.dsp"
+
+			XMath INFO_OFF "(FILE_IDX * 0x44) + 0x1c + OFFSET"
+			Goto INFO_OFF
+			Get AUDIO_OFFSET Long
+			Math AUDIO_OFFSET + OFFSET
+			Get BYTE_SIZE Long							# Data size, but not always full audio frames
+			Get MISC1 Long
+			Get SAMP_COUNT Long
+			Get NIB_COUNT Long
+			SavePos COEFF_OFFSET
+			Goto 0x20 0 SEEK_CUR
+			Get MISC2 Long
+			XMath AUDIO_SIZE "((SAMP_COUNT + 13) / 14) * 8"
+			Get JUNK Long
+
+			Log MEMORY_FILE 0 0
+			PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+			PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+			PutVarChr MEMORY_FILE 8 22050 Long					# not stored
+			PutVarChr MEMORY_FILE 0x1b 0 Byte
+			Append
+			Log MEMORY_FILE COEFF_OFFSET 0x20
+			PutVarChr MEMORY_FILE 0x5f 0 Byte
+			Log MEMORY_FILE AUDIO_OFFSET BYTE_SIZE Long
+			Append
+
+			Get MEM_SIZE asize -1
+			Log FILENAME2 0 MEM_SIZE -1
+
+			Math ENTRY2 + 0x1c
+		Next B
+
+	Else
+		Log FILENAME OFFSET SIZE
+
+	Endif
+
+	Math ENTRY + 12
+Next A
+
+
+
