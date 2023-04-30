@@ -1,0 +1,82 @@
+# ================================================================================
+# Bomberman Generation (GameCube)
+# Extract audio from .seb and .mdt files
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on either the SEB or MDT files
+# Audio will be extracted as playable DSP files
+
+
+Get EXT extension
+
+If EXT = "seb"
+	Math SEB_OFFSET = 0
+
+ElIf EXT = "mdt"
+	Goto 0xb4
+	Get SEB_OFFSET Long
+
+	If SEB_OFFSET = 0
+		Print "No SEB file in this MDT archive."
+		Exit
+	Endif
+Endif
+
+
+Endian Big
+
+Goto SEB_OFFSET
+Goto 0x14 0 SEEK_CUR
+Get TABLE Long
+Math TABLE + SEB_OFFSET
+Get JUNK Long
+Get SAMP_OFF Long
+Math SAMP_OFF + SEB_OFFSET
+Math ENTRY = TABLE
+
+For A = 0
+	Goto ENTRY
+	Get ID Short
+
+	If ID = 0xFFFF
+		Break
+	Endif
+
+	Get JUNK Short
+	Get OFFSET Long
+	Math OFFSET + SAMP_OFF
+	Goto 6 0 SEEK_CUR
+	Get SAMP_RATE Short
+	Get TYPE Byte
+	Get SAMP_COUNT Threebyte
+	XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"
+	XMath NIB_COUNT "SIZE * 2"
+	Goto 8 0 SEEK_CUR
+	Get COEFF_OFF Long
+	Math COEFF_OFF + TABLE
+	Math COEFF_OFF + 8
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+	Append
+	Log MEMORY_FILE COEFF_OFF 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	String FILENAME P "%ID%.dsp"
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x20
+Next A
+
