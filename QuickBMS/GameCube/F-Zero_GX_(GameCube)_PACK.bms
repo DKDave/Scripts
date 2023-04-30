@@ -1,0 +1,105 @@
+# ================================================================================
+# F-Zero GX (GameCube)
+# Extract audio from PACK files in the snd/normal_se folder
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+# Files are extracted as either .dsp or .wav
+
+
+Endian Big
+
+FindLoc TBLD String "gcaxTBLD" 0 ""
+
+If TBLD = ""
+	Print "TBLD not found."
+	Exit
+Endif
+
+FindLoc PCMD String "gcaxPCMD" 0 ""
+
+If PCMD = ""
+	Print "PCMD not found."
+	Exit
+Endif
+
+
+Get TEMPNAME basename
+
+Math TBLD + 0x20
+Math PCMD + 0x20
+
+Goto TBLD
+GetDString JUNK 0x34
+Get ENTRY Long
+Math ENTRY + TBLD
+Goto ENTRY
+Get JUNK Long
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 To FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET + PCMD
+	Get AUDIO_TYPE Long
+	Get NIB_COUNT Long
+	SavePos COEFF_OFF
+	Goto 0x2e 0 SEEK_CUR
+	Get TYPE Short								# 0 = PCM16, otherwise DSP
+	Get RATE Short
+	Get JUNK Short
+	Get SIZE Long
+	XMath SAMP_COUNT "(SIZE / 8) * 14"
+
+	If TYPE <> 0								# DSP
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x1b 0 Byte
+		PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+		PutVarChr MEMORY_FILE 0x04 NIB_COUNT Long
+		PutVarChr MEMORY_FILE 0x08 RATE Long
+
+		Append
+		Log MEMORY_FILE COEFF_OFF 0x20
+		PutVarChr MEMORY_FILE 0x5f 0 Byte
+		Log MEMORY_FILE OFFSET SIZE
+		Append
+
+		String FILENAME P "%TEMPNAME%_%A%.dsp"
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+	Else									# PCM
+		Endian Little
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x2b 0 Byte
+		PutVarChr MEMORY_FILE 0 0x46464952 Long
+		XMath RIFF_SIZE "SIZE + 0x24"
+		PutVarChr MEMORY_FILE 0x04 RIFF_SIZE Long
+		PutVarChr MEMORY_FILE 8 0x45564157 Long
+		PutVarChr MEMORY_FILE 0x0c 0x20746d66 Long
+		PutVarChr MEMORY_FILE 0x24 0x61746164 Long
+		PutVarChr MEMORY_FILE 0x10 0x10 Long
+		PutVarChr MEMORY_FILE 0x14 1 Short					# PCM16
+		PutVarChr MEMORY_FILE 0x16 1 Short					# mono
+		PutVarChr MEMORY_FILE 0x18 RATE Long
+		XMath BYTE_RATE "(RATE * 2)"
+		PutVarChr MEMORY_FILE 0x1c BYTE_RATE Long
+		PutVarChr MEMORY_FILE 0x20 2 Short
+		PutVarChr MEMORY_FILE 0x22 0x10 Short
+		PutVarChr MEMORY_FILE 0x28 SIZE Long
+		Endian Big
+
+		String FILENAME P "%TEMPNAME%_%A%.wav"
+
+		Append
+		Encryption swap 4							# Convert to little endian
+		Log MEMORY_FILE OFFSET SIZE
+		Encryption "" ""
+		Append
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+	Endif
+
+	Math ENTRY + 0x44
+Next A
+
