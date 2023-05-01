@@ -1,0 +1,42 @@
+# ================================================================================
+# ASB audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Should work for various games by The 3DO Company:
+
+# Heroes Of Might & Magic: Quest For The Dragonbone Staff (PS2)
+# Warriors Of Might & Magic (PS2)
+# Shifters Of Might & Magic (PS2)
+
+
+Open FDDE "ATX" 1
+
+Goto 0x08
+Get FILES Long
+Get TEMPNAME basename
+
+Math ENTRY = 0x14
+Math NAME_OFF = 0
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Goto OFFSET
+	Get SIZE Long
+	Math OFFSET + 0x24
+	Goto NAME_OFF 1
+
+	GetCT FILENAME String 0x09 1
+	GetCT JUNK String 0x0A 1
+	String FILENAME + ".vag"
+	SavePos NAME_OFF 1
+
+	Log MEMORY_FILE OFFSET SIZE
+	PutVarChr MEMORY_FILE 0 0x70474156 Long
+	Log FILENAME 0 SIZE -1
+
+	Math ENTRY + 4
+Next A
+
+
