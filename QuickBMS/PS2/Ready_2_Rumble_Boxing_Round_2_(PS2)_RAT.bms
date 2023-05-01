@@ -1,0 +1,26 @@
+# ================================================================================
+# Ready 2 Rumble Boxing: Round 2 (PS2)
+# BOXING.RAT extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+
+IDstring "RAT\x00"
+
+Goto 0x18
+Get FILES Long
+
+Goto 0x20
+
+For A = 0 < FILES
+	GetDString BASENAME 8
+	GetDString EXT 4
+	GetDString MISC1 4
+	Get SIZE Long
+	GetDString JUNK 8
+	Get OFFSET Long
+	String FILENAME P "%BASENAME%.%EXT%"
+
+	Log FILENAME OFFSET SIZE
+Next A
+
