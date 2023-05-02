@@ -1,0 +1,67 @@
+# ================================================================================
+# Prince Of Persia: Sands Of Time (PS2)
+# .BF extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "BIG\x00"
+
+Comtype lzo1x
+
+Goto 8
+Get FILES Long
+Math ENTRY = 0x44
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get JUNK Threebyte
+	Get TYPE Byte
+	Goto OFFSET
+	Get TOTAL_SIZE Long
+	SavePos OFFSET
+	String FILENAME P "BF_%A%"
+
+	If TYPE = 0xfd									# 1 compressed part
+		Get SIZE Long
+		Get ZSIZE Long
+		SavePos OFFSET
+		CLog FILENAME OFFSET ZSIZE SIZE
+
+	ElIf TYPE = 0xff									# multiple compressed parts
+		Log MEMORY_FILE 0 0
+
+		For B = 0
+			Get SIZE Long
+			Get ZSIZE Long
+			SavePos OFFSET
+
+			If SIZE = 0
+				Break
+			Endif
+
+			Append
+
+			If ZSIZE <> SIZE
+				CLog MEMORY_FILE OFFSET ZSIZE SIZE
+			Else
+				Log MEMORY_FILE OFFSET ZSIZE
+			Endif
+
+			Append
+
+			Goto ZSIZE 0 SEEK_CUR
+		Next B
+
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+
+	Else
+		String FILENAME P "%FILENAME%_%TYPE%"
+		Log FILENAME OFFSET TOTAL_SIZE
+	Endif
+
+	Math ENTRY + 8
+Next A
+
