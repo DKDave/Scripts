@@ -1,0 +1,127 @@
+# ================================================================================
+# Tiger Woods 2005 (PS2)
+# Extract audio from AUDIOSTM.SAB archive
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: use this script on the LOADONCE.PS2 file in the same folder as AUDIOSTM.SAB
+# Tested on SLUS_210.02
+
+
+Open FDSE "AUDIOSTM.SAB" 1
+
+
+# Process LOADONCE.PS2 file to get audio table
+
+For
+	FindLoc OFFSET String "ONOS" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	Get JUNK Long
+	Get SIZE Long
+	Goto 8 0 SEEK_CUR
+	GetDString TYPE1 4
+
+	If TYPE1 = "TADS"
+		Math OFFSET + 0x40
+		Math SIZE - 0x40
+
+		Append
+		Log MEMORY_FILE2 OFFSET SIZE
+		Append
+	Endif
+Next
+
+
+
+# Create an array of file offsets and info
+
+Goto 4 -2
+Get FILES Long -2
+
+XMath DATA_START "(FILES * 4) + 8"
+
+Math ENTRY = 8
+Math COUNT = 0
+
+For A = 0 < FILES
+	Goto ENTRY -2
+	Get OFFSET Long -2
+	Math OFFSET + DATA_START
+
+	Goto OFFSET -2
+	Get FILES2 Short -2
+	Get JUNK Short -2
+	Get RATE Short -2								# Sample rate
+	Get CHANNELS Byte -2							# Channels
+	Get ID Byte -2								# Section ID (0 - 24)
+	SavePos ENTRY2 -2
+
+	For B = 0 < FILES2
+		Goto ENTRY2 -2
+		Get OFFSET2 Long -2
+		Get MISC1 Long -2
+
+		PutArray 0 COUNT OFFSET2
+		PutArray 1 COUNT MISC1
+		PutArray 2 COUNT CHANNELS
+		PutArray 3 COUNT RATE
+
+		Math COUNT + 1
+		Math ENTRY2 + 8
+	Next B
+
+	Math ENTRY + 4
+Next A
+
+
+# Process files from array
+
+For A = 1 To COUNT
+	Math FNUM = A
+	Math FNUM - 1
+
+	GetArray OFFSET 0 FNUM
+	GetArray MISC1 1 FNUM
+	GetArray CHANNELS 2 FNUM
+	GetArray RATE 3 FNUM
+
+	If A < COUNT
+		GetArray SIZE 0 A
+		Math SIZE - OFFSET
+	Else
+		XMath SIZE "0x27118000 - OFFSET"
+	Endif
+
+# Create SS2 header
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x27 0 Byte
+	PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+	PutVarChr MEMORY_FILE 0x04 0x18 Long
+	PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+	PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+	PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+	PutVarChr MEMORY_FILE 0x14 0x8000 Long					# Interleave for stereo
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	XMath RATE "(RATE * 48000) / 4096"						# need to confirm
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+
+	String FILENAME P "TW2005_%FNUM%.ss2"
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+Next A
+
