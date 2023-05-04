@@ -1,0 +1,20 @@
+# ================================================================================
+# Mortal Kombat: Special Forces (PS1)
+# SF.CDF extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "sf.cdf"
+
+Goto 0x0c
+Get FILES Long
+Get JUNK Long
+
+For A = 0 < FILES
+	GetDString FILENAME 12
+	Get OFFSET Long
+	Get SIZE Long
+	Log FILENAME OFFSET SIZE
+Next A
+
