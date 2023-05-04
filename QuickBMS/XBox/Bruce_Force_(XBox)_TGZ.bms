@@ -1,0 +1,46 @@
+# ================================================================================
+# Brute Force (XBox)
+# TGZ extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype gzip
+
+Get ZSIZE asize
+CLog MEMORY_FILE 0 ZSIZE ZSIZE
+Get MEM_SIZE asize -1
+
+Math OFFSET = 0
+
+For A = 0
+	Goto OFFSET -1
+	GetDString FILENAME 0x64 -1
+
+	If FILENAME = ""
+		Break
+	Endif
+
+	Goto 0x18 -1 SEEK_CUR
+	Get STRING1 String -1
+	Get STRING2 String -1
+	String JUNK v STRING1 " " SIZE MISC1 MISC2
+	String JUNK v STRING2 " " FLAG
+	Math SIZE Octal SIZE
+	Math MISC1 Octal MISC1							# Octal stored as text ...
+	Math MISC2 Octal MISC2
+	Math FLAG Octal FLAG							# 0 = file, 5 = folder
+
+	Math OFFSET + 0x200
+
+	If FLAG = 0
+		Log FILENAME OFFSET SIZE -1
+	Endif
+
+	Math OFFSET + SIZE
+	Goto OFFSET
+	Padding 0x200
+	SavePos OFFSET
+
+Next A
+
