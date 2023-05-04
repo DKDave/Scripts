@@ -1,0 +1,96 @@
+# ================================================================================
+# Metal Gear Solid (PS1) [SLUS_007.76]
+# Extract audio from VOX.DAT
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Put STAGE.DIR and VOX.DAT in the same folder and run this script on STAGE.DIR
+# Files are extracted as .ss2 playable in Foobar/vgmstream
+
+
+Open FDSE "vox.dat" 1
+
+Math NAME_TABLE = 0x40ec10a
+
+For A = 0 < 754
+	Goto NAME_TABLE
+	Get JUNK Short
+	GetDString FILENAME 8
+	String FILENAME + ".ss2"
+	Get JUNK Short
+	Get OFFSET Long
+	ReverseLong OFFSET
+	Math OFFSET * 0x800
+
+	For B = 0
+		Goto OFFSET 1
+		Get CHUNK_TYPE Byte 1
+		Get CHUNK_SIZE Threebyte 1
+
+		If CHUNK_TYPE = 2
+			Goto 6 1 SEEK_CUR 1
+			Get SAMP Short 1
+			Get CHANNELS Byte 1
+			Get AUDIO_TYPE Byte 1
+
+			Log MEMORY_FILE 0 0						# Start a new file
+			PutVarChr MEMORY_FILE 0x27 0 Byte
+			PutVarChr MEMORY_FILE 0 0x64685353 Long				# SShd
+			PutVarChr MEMORY_FILE 0x04 0x18 Long
+			PutVarChr MEMORY_FILE 0x08 2 Long					# PS ADPCM
+			PutVarChr MEMORY_FILE 0x20 0x64625353 Long				# SSbd
+			PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+			PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+			PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+
+			If CHANNELS = 2
+				PutVarChr MEMORY_FILE 0x14 0x1000 Long			# Interleave
+			Else
+				PutVarChr MEMORY_FILE 0x14 0 Long
+			Endif
+
+			If SAMP = 8
+				PutVarChr MEMORY_FILE 0x0c 22050 Long
+			Elif SAMP = 12
+				PutVarChr MEMORY_FILE 0x0c 32000 Long
+			Elif SAMP = 16
+				PutVarChr MEMORY_FILE 0x0c 44100 Long
+			Endif
+		Endif
+
+		If CHUNK_TYPE = 1
+			SavePos OFFSET2 1
+			XMath DATA_SIZE "CHUNK_SIZE - 4"
+			Append
+			Log MEMORY_FILE OFFSET2 DATA_SIZE 1
+			Append
+		Endif
+
+		If CHUNK_TYPE = 0xf0
+			Get MEM_SIZE asize -1
+			XMath SS2_SIZE "MEM_SIZE - 0x28"
+			PutVarChr MEMORY_FILE 0x24 SS2_SIZE Long
+			XMath TEMP1 "MEM_SIZE - 14"
+
+			Goto TEMP1 -1
+			GetDString TEMP2 0xe -1
+
+			If TEMP2 = "wwwwwwwwwwwwww"					# remove this to eliminate click at end of audio
+				Goto TEMP1 -1
+				For C = 0 < 14
+					PutVarChr MEMORY_FILE TEMP1 0 Byte
+					Math TEMP1 + 1
+				Next C
+			Endif
+
+			Log FILENAME 0 MEM_SIZE -1
+			Break
+		Endif
+
+		Math OFFSET + CHUNK_SIZE
+
+	Next B
+
+	Math NAME_TABLE + 0x10
+Next A
+
