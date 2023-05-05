@@ -1,0 +1,24 @@
+# ================================================================================
+# Gex (PS1)
+# BIGFILE.BIG extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILES Long
+
+Goto 0x14
+
+For A = 0 < FILES
+	Get MISC1 Long
+	Get SIZE Long
+	Get OFFSET Long
+	Get MISC2 Long
+
+	String FILENAME P "BIGFILE_%A%"
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+
+
