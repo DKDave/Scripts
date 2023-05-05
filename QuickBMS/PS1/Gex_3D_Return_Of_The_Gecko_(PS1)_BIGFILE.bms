@@ -1,0 +1,29 @@
+# ================================================================================
+# Gex 3D: Return Of The Gecko (PS1) [SLES_005.96]
+# BIGFILE.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype LZRW1
+
+Get FILES Long
+
+For A = 0 < FILES
+	Get MISC1 Long
+	Get SIZE Long
+	Get ZSIZE Long						# = 0 if file isn't compressed
+	Get OFFSET Long
+	Get MISC3 Long
+	Get MISC4 Long
+
+	String FILENAME P "BIGFILE_%A%"
+
+	If ZSIZE = 0
+		Log FILENAME OFFSET SIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+Next A
+
