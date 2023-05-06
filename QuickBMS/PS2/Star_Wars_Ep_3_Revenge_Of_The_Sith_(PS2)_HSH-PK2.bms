@@ -1,0 +1,33 @@
+# ================================================================================
+# Star Wars Episode III: Revenge Of The Sith (PS2)
+# HSH/PK2 extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the HSH file
+
+
+Open FDSE "PS2PAK_0.PK2" 1
+Open FDSE "PS2PAK_1.PK2" 2
+
+Math ENTRY = 0
+Get FILE_END asize
+
+For A = 0
+	If ENTRY = FILE_END
+		Break
+	Endif
+
+	Goto ENTRY
+	GetCT TEXT String 0x0a 0
+	String JUNK v TEXT " " FILENAME ARC SIZE OFFSET
+	Math ARC = ARC
+	Math ARC + 1
+	Math SIZE = SIZE
+	Math OFFSET = OFFSET
+	SavePos ENTRY
+
+	Log FILENAME OFFSET SIZE ARC
+Next A
+
+
