@@ -1,0 +1,32 @@
+# ================================================================================
+# Way Of The Samurai (PS2)
+# VOLUME.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+
+Goto 8
+Get FILES Long
+Get DATA_START Long
+Math ENTRY = 0x14
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get SIZE Long
+	Get MISC2 Long
+	Get MISC3 Long
+	Get MISC4 Long
+	XMath NAME_OFF "OFFSET + SIZE"
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x18
+Next A
+

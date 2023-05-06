@@ -1,0 +1,44 @@
+# ================================================================================
+# Way Of The Samurai (PS2)
+# common.VGD audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "VGS1"
+
+Get TEMPNAME basename
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Get FILES Long
+
+XMath DATA_START "(FILES * 12) + 0x10"
+Goto DATA_START
+Padding 0x100
+SavePos DATA_START
+
+Goto 0x10
+
+For A = 0 < FILES
+	Get ID Short
+	Get SAMP_RATE Short
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get SIZE Long
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+	Endian Little
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+Next A
+

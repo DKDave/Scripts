@@ -1,0 +1,89 @@
+# ================================================================================
+# Way Of The Samurai (PS2)
+# GZMVS.RBB extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "siff"
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long						# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long							# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long						# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+Get FILE_END asize
+Math CHUNK_START = 8
+Math FNAME_START = 0x79
+
+For
+	If CHUNK_START = FILE_END
+		Break
+	Endif
+
+	Goto CHUNK_START
+	GetDString CHUNK_NAME 4
+	Get CHUNK_SIZE Long
+
+	If CHUNK_NAME = "RIDX"							# offsets / zsizes
+		XMath RIDX_ENTRY "CHUNK_START + 8"
+		XMath FILES "CHUNK_SIZE / 8"
+	Elif CHUNK_NAME = "EXIX"							# uncompressed sizes
+		XMath EXIX_ENTRY "CHUNK_START + 8"
+	Elif CHUNK_NAME = "RBB0"							# data
+		XMath DATA_START "CHUNK_START + 8"
+	Endif
+
+	XMath CHUNK_START "CHUNK_START + CHUNK_SIZE + 8"
+Next
+
+
+For A = 0 < FILES
+	Goto RIDX_ENTRY
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get ZSIZE Long
+	XMath COMP_FLAG "(ZSIZE & 0x80000000) >> 31"
+	Math ZSIZE & 0x7FFFFFFF
+	Goto EXIX_ENTRY
+	Get SIZE Long
+
+	If COMP_FLAG = 1								# only first file is compressed (filenames list)
+		CLog MEMORY_FILE2 OFFSET ZSIZE SIZE
+	Else
+		Goto FNAME_START -2
+		GetCT FILENAME String 0x20 -2
+		String FILENAME R ".wav" ".ss2"
+		GetDString CHANNELS 1 -2
+		Get JUNK Short -2
+		Math CHANNELS = CHANNELS
+		SavePos FNAME_START -2
+
+		PutVarChr MEMORY_FILE 0x0c 44100 Long
+		PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+
+		If CHANNELS = 2
+			PutVarChr MEMORY_FILE 0x14 0x2000 Long
+		Else
+			PutVarChr MEMORY_FILE 0x14 0 Long
+		Endif
+
+		PutVarChr MEMORY_FILE 0x24 ZSIZE Long
+
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET ZSIZE
+		Append
+	Endif
+
+	Math RIDX_ENTRY + 8
+	Math EXIX_ENTRY + 4
+Next A
+
