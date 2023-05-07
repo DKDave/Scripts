@@ -1,0 +1,42 @@
+# ================================================================================
+# Urban Chaos: Riot Response (PS2)
+# DATA.DIR extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "WAD" 1
+Open FDDE "000" 2
+Open FDDE "001" 3
+Open FDDE "002" 4
+
+Get MISC1 long
+Get FILES long
+Math ARC = 1
+Math OFF2 = 0
+
+For A = 0 < FILES
+	If A = 157
+		Math ARC = 2
+		Math OFF2 = 0x4A554800
+	Endif
+
+	If A = 165
+		Math ARC = 3
+		Math OFF2 = 0x989D2000
+	Endif
+
+	If A = 169
+		Math ARC = 4
+		Math OFF2 = 0xE5BDB800
+	Endif
+
+	GetDString FILENAME 0x40
+	Get SIZE Long
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Math OFFSET - OFF2
+
+	Log FILENAME OFFSET SIZE ARC
+Next A
+

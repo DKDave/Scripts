@@ -1,0 +1,25 @@
+# ================================================================================
+# Urban Chaos: Riot Response (PS2)
+# ENT & GEO extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# ENT and GEO files have the same format
+
+
+Goto 0xc4
+Get FILES long
+
+For A = 0 < FILES
+	Get LEN Short
+	GetDString FILENAME LEN
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get JUNK Long
+
+	If SIZE <> 0
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+Next A
+
