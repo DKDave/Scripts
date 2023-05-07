@@ -1,0 +1,45 @@
+# ================================================================================
+# Eve Of Extinction (PS2)
+# BDH/BDP extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the BDH file
+
+
+IDString "BDP_"
+
+Open FDDE "BDP" 1
+
+Get TEMPNAME basename
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+
+	Goto OFFSET 1
+	GetDString TYPE 4 1
+
+	If TYPE = "APC_"
+		String EXT = ".apc"
+	Elif TYPE = "BRS_"
+		String EXT = ".brs"
+	Elif TYPE = "BMV2"
+		String EXT = ".bmv2"
+	Elif TYPE = "PAC_"
+		String EXT = ".pac"
+	Else
+		String EXT = ""
+	Endif
+
+	String FILENAME P "%TEMPNAME%_%A%%EXT%"
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 8
+Next A
+
