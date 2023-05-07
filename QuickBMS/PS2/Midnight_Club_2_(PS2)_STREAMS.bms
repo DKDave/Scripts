@@ -1,0 +1,21 @@
+# ================================================================================
+# Midnight Club 2 (PS2)
+# STREAMS.DAT extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+IDString "Hash"
+
+Get FILES Long
+
+For A = 0 < FILES
+	Get HASH Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	String FILENAME P "STREAMS_%A%.stm"
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+

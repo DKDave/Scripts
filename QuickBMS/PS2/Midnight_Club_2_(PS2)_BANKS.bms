@@ -1,0 +1,30 @@
+# ================================================================================
+# Midnight Club 2 (PS2)
+# BANKS.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+IDString "DAVE"
+
+Get FILES Long
+Get DIR_SIZE Long
+Get NAMES_SIZE Long
+XMath NAMES "0x800 + DIR_SIZE"
+
+Math ENTRY = 0x800
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET ZSIZE
+
+	Math ENTRY + 0x10
+Next A
+
