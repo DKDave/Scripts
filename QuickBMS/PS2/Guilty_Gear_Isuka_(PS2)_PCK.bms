@@ -1,0 +1,111 @@
+# ================================================================================
+# Guilty Gear Isuka (PS2)
+# PCK extract (MUSIC, MOVIE, MOVIEP)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the appropriate PCK archive
+# Music names not yet supported
+
+
+Open FDSE "SLES_532.84" 1
+Get TEMPNAME basename
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 1 Long						# 16-bit PCM
+PutVarChr MEMORY_FILE 0x0c 48000 Long
+PutVarChr MEMORY_FILE 0x10 2 Long						# Channels
+PutVarChr MEMORY_FILE 0x14 0x200 Long					# Interleave
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+
+
+If TEMPNAME = "MUSIC"
+	Math ENTRY = 0x243050
+
+	For A = 0 < 30
+		Goto ENTRY 1
+		Get OFFSET Long 1
+		Get OFFSET2 Long 1
+		XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+		Math OFFSET * 0x800
+
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		String FILENAME P "%TEMPNAME%_%A%.ss2"
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET SIZE
+		Append
+
+		Math ENTRY + 4
+	Next A
+
+
+Elif TEMPNAME = "MOVIE"
+	Math ENTRY = 0x245698
+	Math MCOUNT = 0
+
+	For A = 0 < 10
+		Goto ENTRY 1
+		Get OFFSET Long 1
+		Get OFFSET2 Long 1
+		XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+		Math OFFSET * 0x800
+
+		XMath MOD "A % 2"
+
+		If MOD = 0
+			String FILENAME P "%TEMPNAME%_%MCOUNT%.pss"
+			Log FILENAME OFFSET SIZE
+		Else
+			PutVarChr MEMORY_FILE 0x24 SIZE Long
+			String FILENAME P "%TEMPNAME%_%MCOUNT%.ss2"
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE
+			Append
+			Math MCOUNT + 1
+		Endif
+
+		Math ENTRY + 4
+	Next A
+
+Elif TEMPNAME = "MOVIEP"
+	Math ENTRY = 0x2456d8
+	Math MCOUNT = 0
+
+	For A = 0 < 10
+		Goto ENTRY 1
+		Get OFFSET Long 1
+		Get OFFSET2 Long 1
+		XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+		Math OFFSET * 0x800
+
+		XMath MOD "A % 2"
+
+		If MOD = 0
+			String FILENAME P "%TEMPNAME%_%MCOUNT%.pss"
+			Log FILENAME OFFSET SIZE
+		Else
+			PutVarChr MEMORY_FILE 0x24 SIZE Long
+			String FILENAME P "%TEMPNAME%_%MCOUNT%.ss2"
+			Log FILENAME 0 0x28 -1
+			Append
+			Log FILENAME OFFSET SIZE
+			Append
+			Math MCOUNT + 1
+		Endif
+
+		Math ENTRY + 4
+	Next A
+
+Endif
+
+
