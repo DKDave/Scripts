@@ -1,0 +1,39 @@
+# ================================================================================
+# Strike Witches: Silver Wings (XBox 360)
+# .bin extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "GGXArchiver1.00\x00"
+
+Comtype BPE
+
+Get FILES Long
+Get FILES2 Long								# Number of actual files
+Math NAMES = 0x20
+XMath ENTRY "(FILES * 0x20) + 0x20"
+XMath DATA_START "(FILES * 0x20) + 0x20 + (FILES2 * 0x18)"
+
+For A = 0 < FILES2
+	Goto ENTRY
+	Get NAME_IDX Long
+	Get MISC1 Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get FLAG Long
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	XMath NAME_OFF "(NAME_IDX * 0x20) + 0x20"
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If FLAG = 1
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+	Math ENTRY + 0x18
+Next A
+
