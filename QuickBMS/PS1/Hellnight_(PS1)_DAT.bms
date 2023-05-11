@@ -1,0 +1,27 @@
+# ================================================================================
+# Hellnight (PS1)
+# DAT.MD extractor
+# QuickBMS script by DKDave, 2019
+# ================================================================================
+
+
+IDString "MDFI"
+
+Goto 0x10
+Get FILES Long
+Math ENTRY = 0x14
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get FNAME_OFFSET Long
+	Get OFFSET Long
+	Get SIZE Long
+	Goto FNAME_OFFSET
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x0c
+Next A
+
+
