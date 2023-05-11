@@ -1,0 +1,37 @@
+# ================================================================================
+# Anastasia (PS1)
+# GAMEDATA.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the SLES_029.61 file
+
+
+Open FDSE "GAMEDATA.BIN" 1
+
+Math ENTRY = 0x1fe80
+
+For A = 0 < 0xd8
+	Goto ENTRY
+	Get NAME_OFFSET Short
+	Get MISC1 Short
+	Get OFFSET Long
+	Get JUNK Long
+	Get OFFSET2 Long
+
+	If A = 0xd7
+		XMath SIZE "(0x1adc - OFFSET) * 0x800"
+	Else
+		XMath SIZE "(OFFSET2 - OFFSET) * 0x800"
+	Endif
+
+	Math OFFSET * 0x800
+	Math NAME_OFFSET + 0x800
+	Goto NAME_OFFSET
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 8
+Next A
+
