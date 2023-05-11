@@ -1,0 +1,26 @@
+# ================================================================================
+# Mori No Oukoku (PS1)
+# SOUND.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILES Long
+Math ENTRY = 4
+Get TEMPNAME basename
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Goto OFFSET
+	Goto 12 0 SEEK_CUR
+	Get SIZE Long
+	ReverseLong SIZE
+	Math SIZE + 0x30
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 4
+Next A
+
