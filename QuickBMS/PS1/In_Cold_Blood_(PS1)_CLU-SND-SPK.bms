@@ -1,0 +1,49 @@
+# ================================================================================
+# In Cold Blood (PS1)
+# .CLU / .SND / .SPK audio extraction
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "CLU\x00"
+
+Get EXT extension
+Get TEMPNAME basename
+Math FLAG = 0
+
+If EXT = "snd"									# SND files are headerless, SND and SPK are standard VAG files
+	Math FLAG = 1	
+Endif
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+PutVarChr MEMORY_FILE 0x00 0x70474156 Long
+
+Get JUNK Long
+Get DATA_START Long
+Get FILES Long
+
+Goto 0x54
+
+For A = 0 < FILES
+	Get JUNK Long
+	Get SIZE Long
+	Get OFFSET Long
+	Get JUNK Long
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+
+	If FLAG = 0
+		Log FILENAME OFFSET SIZE
+	Else
+		Endian Big
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		PutVarChr MEMORY_FILE 0x10 0x3e80 Long				# Always 16000 ?
+		Endian Little
+
+		Log FILENAME 0 48 -1
+		Append
+		Log FILENAME OFFSET SIZE
+		Append
+	Endif
+Next A
