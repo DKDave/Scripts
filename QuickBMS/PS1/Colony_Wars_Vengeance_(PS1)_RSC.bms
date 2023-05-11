@@ -1,0 +1,26 @@
+# ================================================================================
+# Colony Wars: Vengeance (PS1)
+# GAME.RSC extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+# Note: only a very slight difference in the file format between this and Colony Wars
+
+
+Get FILES Long
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	XMath TEMP1 "ENTRY + 0x24"
+	Goto TEMP1
+	Get OFFSET2 Long
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x14
+Next A
+

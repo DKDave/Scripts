@@ -1,0 +1,24 @@
+# ================================================================================
+# Colony Wars (PS1)
+# GAME.RSC extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+
+Get FILES Long
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	XMath TEMP1 "ENTRY + 0x30"
+	Goto TEMP1
+	Get OFFSET2 Long
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x20
+Next A
+
