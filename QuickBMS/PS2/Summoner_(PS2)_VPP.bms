@@ -1,0 +1,96 @@
+# ================================================================================
+# Summoner (PS2)
+# VPP extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio is extracted as .ss2 files which will play in Foobar/vgmstream
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Get TEMPNAME basename
+
+Goto 8
+Get FILES Long
+Math ENTRY = 0x800
+XMath END "(FILES * 0x40) + ENTRY"
+Goto END
+Padding 0x800
+SavePos OFFSET
+Get FILE_END asize
+
+For A = 0 < FILES
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto ENTRY
+	GetDString FILENAME 0x3c
+	Get SIZE Long
+
+	If TEMPNAME = "SOUNDS"
+		Goto OFFSET
+		Get JUNK Long
+		Get JUNK Long
+		Get SAMP Long
+		XMath SAMP_RATE "(SAMP * 48000) / 4096"
+		SavePos OFFSET2
+
+		Math SIZE2 = SIZE
+		Math SIZE2 - 12
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long
+		PutVarChr MEMORY_FILE 0x24 SIZE2 Long
+
+		String FILENAME R ".vse" ".ss2"
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET2 SIZE2
+		Append
+
+	Elif TEMPNAME = "MUSIC"
+		Goto OFFSET
+		Get JUNK Long
+		Get JUNK Long
+		Get SAMP Long
+		XMath SAMP_RATE "(SAMP * 48000) / 4096"
+
+		SavePos OFFSET2
+		Math SIZE2 = SIZE
+		Math SIZE2 - 12
+
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 0x4000 Long
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		String FILENAME R ".vmu" ".ss2"
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET2 SIZE2
+		Append
+
+	Else
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math OFFSET + SIZE
+	Goto OFFSET
+	Padding 0x800
+	SavePos OFFSET
+
+	Math ENTRY + 0x40
+Next A
+
