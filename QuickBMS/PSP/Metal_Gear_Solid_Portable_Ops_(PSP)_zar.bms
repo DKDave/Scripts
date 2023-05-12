@@ -1,0 +1,41 @@
+# ================================================================================
+# Metal Gear Solid: Portable Ops (PSP)
+# _zar / cache.dar extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Can be run on compressed _zar files or cache.dar files extracted from the _zar files
+
+
+Get TEMPNAME filename
+
+If TEMPNAME = "_zar"
+	Get SIZE Long
+	Get ZSIZE asize
+	Math ZSIZE - 4
+	CLog MEMORY_FILE 4 ZSIZE SIZE
+
+Elif TEMPNAME = "cache.dar"
+	Get ZSIZE asize
+	Log MEMORY_FILE 0 ZSIZE
+Endif
+
+
+Goto 0 -1
+Get FILES Long -1
+SavePos OFFSET -1
+
+For A = 0 < FILES
+	Goto OFFSET -1
+
+	Get FILENAME String -1
+	Padding 0x4 -1
+	Get SIZE Long -1
+	Padding 0x10 -1
+	SavePos OFFSET2 -1
+
+	Log FILENAME OFFSET2 SIZE -1
+
+	XMath OFFSET "OFFSET2 + SIZE + 1"
+Next A
+
