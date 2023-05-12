@@ -1,0 +1,90 @@
+# ================================================================================
+# Punisher (PS2)
+# VPP extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Slightly different format to Summoner
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Get TEMPNAME basename
+
+Goto 8
+Get FILES Long
+Goto 0x10
+Get ENTRY Long
+
+XMath OFFSET "(FILES * 0x20) + 0x800"
+Goto OFFSET
+Padding 0x800
+SavePos OFFSET
+
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x18
+	Get ZSIZE Long
+	Get SIZE Long
+
+	Set EXT extension FILENAME
+
+	If EXT = "vse"
+		String FILENAME R ".vse" ".ss2"
+		PutVarChr MEMORY_FILE 0x0c 22050 Long
+		PutVarChr MEMORY_FILE 0x10 1 Long
+		PutVarChr MEMORY_FILE 0x14 0 Long
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET SIZE
+		Append
+
+	ElIf EXT = "vmu"
+		Goto OFFSET
+		Get MISC1 Short
+		Get SAMP Short
+		Get MISC3 Long
+		Get MISC4 Long
+		Math SAMP & 0x7FFF
+		XMath SAMP_RATE "(SAMP * 48000) / 4096"
+
+		SavePos OFFSET2
+		Math SIZE2 = SIZE
+		Math SIZE2 - 12
+
+		String FILENAME R ".vmu" ".ss2"
+		PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
+		PutVarChr MEMORY_FILE 0x10 2 Long
+		PutVarChr MEMORY_FILE 0x14 0x4000 Long
+		PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+		Log FILENAME 0 0x28 -1
+		Append
+		Log FILENAME OFFSET2 SIZE2
+		Append
+
+	Else
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math OFFSET + ZSIZE
+	Goto OFFSET
+	Padding 0x800
+	SavePos OFFSET
+
+	Math ENTRY + 0x20
+Next A
+
+
