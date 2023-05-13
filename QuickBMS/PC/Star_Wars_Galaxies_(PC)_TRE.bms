@@ -1,0 +1,44 @@
+# ================================================================================
+# Star Wars Galaxies
+# .TRE extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+
+IDString "EERT5000"
+
+Goto 0xc
+Get FILE1 Long								# file table
+Get JUNK Long
+Get ZSIZE1 Long
+Get JUNK Long
+Get ZSIZE2 Long
+XMath FILE2 "FILE1 + ZSIZE1"							# filenames
+
+CLog MEMORY_FILE FILE1 ZSIZE1 0x10000000
+CLog MEMORY_FILE2 FILE2 ZSIZE2 0x10000000
+
+Get FILES asize -1
+Math FILES / 0x18
+
+Goto 0 -1
+
+For A = 0 < FILES
+	Get MISC1 Long -1
+	Get SIZE Long -1
+	Get OFFSET Long -1
+	Get COMP_FLAG Long -1						# compression flag (0 = none, 2 = zlib)
+	Get ZSIZE Long -1							# 0 if no compression
+	Get FN_OFF Long -1							# filename offset
+	Goto FN_OFF -2
+	Get FILENAME String -2
+
+	If COMP_FLAG = 0
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	If COMP_FLAG = 2
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+Next A
+
