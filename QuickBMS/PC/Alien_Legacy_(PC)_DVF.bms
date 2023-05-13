@@ -1,0 +1,76 @@
+# ================================================================================
+# Alien Legacy (PC)
+# DVF audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio is saved as playable .wav files
+
+
+# Set up WAV header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0 0x46464952 Long						# RIFF
+PutVarChr MEMORY_FILE 8 0x45564157 Long						# WAVE
+PutVarChr MEMORY_FILE 12 0x20746d66 Long						# fmt
+PutVarChr MEMORY_FILE 16 0x10 Long							# fmt size
+PutVarChr MEMORY_FILE 20 1 Short							# PCM
+PutVarChr MEMORY_FILE 22 1 Short							# mono
+PutVarChr MEMORY_FILE 24 11025 Long							# sample rate
+PutVarChr MEMORY_FILE 28 11025 Long							# byte rate
+PutVarChr MEMORY_FILE 32 1 Short							# block align
+PutVarChr MEMORY_FILE 34 8 Short							# bits
+PutVarChr MEMORY_FILE 36 0x61746164 Long						# data
+
+
+Get TEMPNAME basename
+Get FILES Long
+Math ENTRY = 4
+Math FNUM = 0
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+
+	If OFFSET <> 0
+		Goto OFFSET
+
+		For S = 0 < 2
+			Get COUNT Long
+
+			For B = 0 < COUNT
+				Get OFFSET2 Long
+				SavePos TEMP1
+				Goto OFFSET2
+				Get PARTS Long
+
+				For C = 0 < PARTS
+					Get OFFSET3 Long
+					SavePos TEMP2
+					Goto OFFSET3
+					Get SIZE Long
+					SavePos OFFSET3
+
+					String FILENAME P "%TEMPNAME%_%FNUM%.wav"
+
+					PutVarChr MEMORY_FILE 40 SIZE Long
+					XMath RIFF_SIZE "SIZE + 0x24"
+					PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+
+					Log FILENAME 0 0x2c -1
+					Append
+					Log FILENAME OFFSET3 SIZE
+					Append
+
+					Math FNUM + 1
+					Goto TEMP2
+				Next C
+
+				Goto TEMP1
+			Next B
+		Next S
+	Endif
+
+	Math ENTRY + 4
+Next A
+
