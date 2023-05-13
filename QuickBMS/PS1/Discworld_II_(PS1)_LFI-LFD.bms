@@ -1,0 +1,111 @@
+# ================================================================================
+# Discworld II: Mortality Bytes! (aka Missing Presumed ...) (PS1, 1997)
+# LFI / LFD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on DISCWLD2.LFI and have DISCWLD.LFD in the same folder
+# MUS files are converted to playable .vag files
+# The audio in BMV files is converted to playable .ss2 files
+
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+PutVarChr MEMORY_FILE 0x10 0x22560000 Long
+
+
+# Create SS2 header
+
+Log MEMORY_FILE2 0 0
+PutVarChr MEMORY_FILE2 0x27 0 Byte
+PutVarChr MEMORY_FILE2 0 0x64685353 Long						# SShd
+PutVarChr MEMORY_FILE2 0x04 0x18 Long
+PutVarChr MEMORY_FILE2 0x08 2 Long							# PS ADPCM
+PutVarChr MEMORY_FILE2 0x0c 22050 Long						# Rate
+PutVarChr MEMORY_FILE2 0x10 2 Long							# Channels
+PutVarChr MEMORY_FILE2 0x20 0x64625353 Long						# SSbd
+PutVarChr MEMORY_FILE2 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE2 0x1c 0xFFFFFFFF Long
+
+
+Open FDDE "LFD" 1
+
+Get FILES asize
+Math FILES / 20
+
+For A = 0 < FILES
+	GetDString FILENAME 12
+	Get SIZE Long
+	Get OFFSET Long
+	Set EXT extension FILENAME
+	Set BASE basename FILENAME
+
+	If EXT = "MUS"
+		Endian Big
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		Endian Little
+		String FILENAME R ".MUS" ".vag"
+		Log FILENAME 0 0x30 -1
+		Append
+		Log FILENAME OFFSET SIZE 1
+		Append
+
+	Elif EXT = "BMV"								# video files with stereo audio
+		Goto OFFSET 1
+		Goto 4 1 SEEK_CUR
+
+		Log MEMORY_FILE3 0 0						# left channel
+		Log MEMORY_FILE4 0 0						# right channel
+
+		For B = 0
+			GetDString NAME 4 1
+
+			If NAME = " DNE"
+				Break
+			Endif
+
+			If NAME = "MARF"
+				Math SIZE2 = 0
+			Else
+				Get SIZE2 Long 1
+			Endif
+
+			SavePos OFFSET2 1
+
+			If NAME = "DUAL"
+				Append
+				Log MEMORY_FILE3 OFFSET2 SIZE2 1
+				Append
+			Endif
+
+			If NAME = "DUAR"
+				Append
+				Log MEMORY_FILE4 OFFSET2 SIZE2 1
+				Append
+			Endif
+
+			Goto SIZE2 1 SEEK_CUR
+
+		Next B
+
+		Get MEM_SIZE1 asize -3						# Size should be same for both channels, use as interleave
+		PutVarChr MEMORY_FILE2 0x14 MEM_SIZE1 Long				# Interleave
+		XMath SS2_SIZE "MEM_SIZE1 * 2"
+		PutVarChr MEMORY_FILE2 0x24 SS2_SIZE Long
+
+		String FILENAME R ".BMV" ".ss2"
+		Log FILENAME 0 0x28 -2
+		Append
+		Log FILENAME 0 MEM_SIZE1 -3					# left channel
+		Log FILENAME 0 MEM_SIZE1 -4					# right channel
+		Append
+
+	Else
+		Log FILENAME OFFSET SIZE
+
+	Endif
+
+Next A
+
+
