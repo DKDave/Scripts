@@ -1,0 +1,45 @@
+# ================================================================================
+# Discworld II: Mortality Bytes! (aka Missing Presumed ...) (PS1)
+# IDX / SAMP extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the IDX file
+
+
+Open FDDE "SMP" 1
+
+Get FILES asize
+Math FILES / 4
+
+For A = 0 < FILES
+	Get OFFSET Long
+	XMath MOD "A % 512"
+
+	If OFFSET <> 0 And MOD <> 511
+		Goto OFFSET 1
+		Get MISC1 Long 1
+		Get SIZE Long 1
+		SavePos OFFSET 1
+
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x2f 0 Byte
+		PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+		Endian Big
+		PutVarChr MEMORY_FILE 0x10 22050 Long
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		Endian Little
+
+		Append
+		Log MEMORY_FILE OFFSET SIZE 1
+		Append
+
+		String FILENAME P "DW2_%A%.vag"
+
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+	Endif
+
+Next A
+
