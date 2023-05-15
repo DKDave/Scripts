@@ -1,0 +1,55 @@
+# ================================================================================
+# Castlevania Chronicles (PS1)
+# VB2 music extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on SLES_035.32 and have MUSIC.VB2 in the same folder
+# Not sure about looping values, so they're not used for now
+
+
+Open FDSE "MUSIC.VB2" 1
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x10 2 Long						# Channels
+PutVarChr MEMORY_FILE 0x14 0x8000 Long					# Interleave
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+
+Math ENTRY = 0x3fb20
+
+For A = 0 < 0x58
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+	Get RATE Long
+	Get LOOP_START Long						# Loop start?
+	Get LOOP_END Long						# Loop end?
+	Get MISC3 Long							# 0 or 1 - not channels
+	Math LOOP_START * 0x800
+	Math LOOP_END * 0x800
+
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+#	PutVarChr MEMORY_FILE 0x18 LOOP_START Long
+#	PutVarChr MEMORY_FILE 0x1c LOOP_END Long
+
+	String FILENAME P "CC_MUSIC_%A%.ss2"
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+	Math ENTRY + 0x20
+Next A
+
