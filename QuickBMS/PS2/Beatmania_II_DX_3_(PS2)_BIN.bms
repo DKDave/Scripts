@@ -1,0 +1,30 @@
+# ================================================================================
+# Beatmania II DX 3 (PS2)
+# BM2DX3.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the SLPM_650.06 file and have BM2DX3.BIN in the same folder
+# There are no filenames or file types, so this just extracts the data for further analysis
+
+
+Open FDSE "BM2DX3.BIN" 1
+
+Math ENTRY = 0x145cd0
+
+For A = 0 < 0x15c
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+	Get MISC1 Long
+
+	String FILENAME P "BM2DX3_%A%"
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 12
+Next A
+
+
+
+
