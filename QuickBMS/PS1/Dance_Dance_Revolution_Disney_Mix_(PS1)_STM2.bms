@@ -1,0 +1,51 @@
+# ================================================================================
+# Dance Dance Revolution / Dancing Stage - Disney Mix (PS1)
+# STM2.CAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x0c 44100 Long					# Sample rate
+PutVarChr MEMORY_FILE 0x10 2 Long						# Channels
+PutVarChr MEMORY_FILE 0x14 0x4000 Long					# Interleave
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get JUNK Long
+	Get JUNK Long
+	Get SIZE Long
+	Get JUNK Short
+	Get OFFSET Short
+	ReverseShort OFFSET
+	Math OFFSET * 0x800
+	Math OFFSET + 0x800
+	Math SIZE * 0x800
+
+	If SIZE = 0
+		Break
+	Endif
+
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME P "STM2_%A%.ss2"
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math ENTRY + 0x10
+Next A
+
