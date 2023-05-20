@@ -1,0 +1,70 @@
+# ================================================================================
+# Cyberia 2 (PC)
+# .M95 audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+
+# Create RIFF/WAVE header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2b 0 Byte
+PutVarChr MEMORY_FILE 0 0x46464952 Long
+PutVarChr MEMORY_FILE 8 0x45564157 Long
+PutVarChr MEMORY_FILE 0x0c 0x20746d66 Long
+PutVarChr MEMORY_FILE 0x10 0x10 Long
+PutVarChr MEMORY_FILE 0x14 1 Short
+PutVarChr MEMORY_FILE 0x16 1 Short
+PutVarChr MEMORY_FILE 0x18 0x5622 Long
+PutVarChr MEMORY_FILE 0x1c 0x5622 Long
+PutVarChr MEMORY_FILE 0x20 1 Short
+PutVarChr MEMORY_FILE 0x22 8 Short
+PutVarChr MEMORY_FILE 0x24 0x61746164 Long
+
+Math ENTRY = 0
+
+For A = 0 < 1023
+	Goto ENTRY
+	Get OFFSET Short
+
+	If OFFSET <> 0
+		Math OFFSET * 0x800
+
+		Goto OFFSET
+		Goto 0x40 0 SEEK_CUR
+		Get WAVE_OFF Long
+
+		If WAVE_OFF <> 0
+			Math WAVE_OFF + OFFSET
+
+			Goto WAVE_OFF
+			Goto 0x28 0 SEEK_CUR
+			Get BLOCK_SIZE Long
+			SavePos DATA_OFF
+
+			Append
+			Log MEMORY_FILE DATA_OFF BLOCK_SIZE
+			Append
+		Endif
+
+	Endif
+
+	Math ENTRY + 4
+Next A
+
+
+Get MEM_SIZE asize -1
+
+If MEM_SIZE > 0x2c
+	XMath RIFF_SIZE "MEM_SIZE - 8"
+	XMath DATA_SIZE "MEM_SIZE - 0x2c"
+
+	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+	PutVarChr MEMORY_FILE 0x28 DATA_SIZE Long
+	String FILENAME P "%TEMPNAME%.wav"
+	Log FILENAME 0 MEM_SIZE -1
+Endif
+
+
