@@ -1,0 +1,77 @@
+# ================================================================================
+# Dance Dance Revolution / Dance Stage - Euromix (PS1)
+# Extract music and voice files from STR.BIN
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the file SLES_029.41 and put STR.BIN in the same folder - other versions may be supported at a later date
+# Song names are not yet extracted
+
+
+Open FDSE "STR.BIN" 1
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x10 2 Long
+PutVarChr MEMORY_FILE 0x14 0x4000 Long
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+
+
+# Extract music
+
+Math ENTRY = 0x88ec8
+
+For A = 0 < 37
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET - 0x88b8						# 0x88b8 is start sector of STR.BIN in iso
+	Math OFFSET * 0x800
+	Get SIZE Long
+	Get RATE Long
+	Get VOL Long
+
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME P "DDR_Euromix_%A%.ss2"
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+	Math ENTRY + 0x10
+Next A
+
+
+# Extract VAG files
+
+Goto 0 1
+
+For A = 0
+	FindLoc OFFSET String "VAGp" 1 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET 1
+	Goto 0x0c 1 SEEK_CUR
+	Get SIZE Long 1
+	ReverseLong SIZE
+	Math SIZE + 0x30
+	Goto 0x10 1 SEEK_CUR
+	GetDString FILENAME 0x10 1
+	String FILENAME + ".vag"
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
+
