@@ -1,0 +1,24 @@
+# ================================================================================
+# Darklight Conflict (PS1)
+# INF / WAD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the .INF file
+
+
+Endian Big
+
+Open FDDE "WAD" 1
+
+Get FILES asize
+Math FILES / 0x18
+
+For A = 0 < FILES
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+	GetDString FILENAME 0x10
+	Log FILENAME OFFSET SIZE 1
+Next A
+
