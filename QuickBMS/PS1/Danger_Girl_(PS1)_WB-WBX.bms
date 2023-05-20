@@ -1,0 +1,55 @@
+# ================================================================================
+# Danger Girl (PS1)
+# WB / WBX audio extract (mostly sfx)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# There are fewer filenames than files, so the names are not used for now
+
+
+Open FDDE "WBX" 1
+
+Get TEMPNAME basename
+Get JUNK Short
+Get FILES Short
+XMath TABLE2 "(FILES * 12) + 4"
+
+Goto TABLE2
+Get JUNK Long
+Get FILES2 Long
+Goto 8 0 SEEK_CUR
+SavePos ENTRY
+
+For A = 0 < FILES2
+	Goto ENTRY
+	Get OFFSET Long
+	Get JUNK Short
+	Get SIZE Short
+	Math SIZE * 0x10
+	Get RATE Short
+
+	If SIZE <> 0
+		String FILENAME P "%TEMPNAME%_%A%.vag"
+
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x2f 0 Byte
+		PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+		XMath RATE "(RATE * 48000) / 4096"
+
+		Endian Big
+		PutVarChr MEMORY_FILE 0xc SIZE Long
+		PutVarChr MEMORY_FILE 0x10 RATE Long
+		Endian Little
+
+		Append
+		Log MEMORY_FILE OFFSET SIZE 1
+		Append
+
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+	Endif
+
+	Math ENTRY + 0x14
+Next A
+
