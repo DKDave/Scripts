@@ -1,0 +1,25 @@
+# ================================================================================
+# Dragonheart: Fire & Steel (PS1)
+# LEV extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# There are no file types or file names stored
+
+
+Get TEMPNAME basename
+Get FILES Long
+SavePos ENTRY
+XMath OFFSET "(FILES * 4) + 4"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get SIZE Long
+
+	String FILENAME P "%TEMPNAME%_%A%"
+	Log FILENAME OFFSET SIZE
+
+	Math OFFSET + SIZE
+	Math ENTRY + 4
+Next A
+
