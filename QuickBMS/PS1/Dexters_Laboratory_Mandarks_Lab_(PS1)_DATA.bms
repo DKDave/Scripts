@@ -1,0 +1,66 @@
+# ================================================================================
+# Dexter's Laboratory: Mandark's Lab (PS1)
+# DATA.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio files are extracted from the SND archives to a separate folder as playable .vag files
+
+
+Get FILES Long
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get SIZE Long
+	Get OFFSET Long
+	Math OFFSET * 0x800
+
+	Set EXT extension FILENAME
+
+	If EXT = "SND"
+		Goto OFFSET
+		Get JUNK Short
+		Get SNDS Short
+		SavePos ENTRY2
+
+		For B = 0 < SNDS
+			Goto ENTRY2
+			Get OFFSET2 Long
+			Math OFFSET2 + OFFSET
+			Goto OFFSET2
+			Get SIZE2 Short
+			Math SIZE2 * 0x10
+			Get RATE Short
+			XMath RATE "(RATE * 48000) / 4096"
+			GetDString FILENAME2 8
+			String FILENAME2 P "SND\%FILENAME2%.vag"
+			SavePos OFFSET2
+
+			Log MEMORY_FILE 0 0
+			PutVarChr MEMORY_FILE 0x2f 0 Byte
+			PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+			Endian Big
+			PutVarChr MEMORY_FILE 0x0c SIZE2 Long
+			PutVarChr MEMORY_FILE 0x10 RATE Long
+			Endian Little
+
+			Append
+			Log MEMORY_FILE OFFSET2 SIZE2
+			Append
+
+			Get MEM_SIZE asize -1
+			Log FILENAME2 0 MEM_SIZE -1
+
+			Math ENTRY2 + 4
+		Next B
+
+	Else
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math ENTRY + 0x18
+Next A
+
