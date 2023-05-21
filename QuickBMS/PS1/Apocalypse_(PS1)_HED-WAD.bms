@@ -1,0 +1,28 @@
+# ================================================================================
+# Apocalypse (PS1)
+# HED / WAD extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+Open FDDE "WAD" 1
+
+Get SIZE asize
+XMath SIZE "(SIZE - 1) / 0x14"
+
+For A = 0 < ENTRIES
+	SavePos TEMP1
+	Get TEMP2 Byte
+
+	If TEMP2 = 0xFF
+		Break
+	Endif
+
+	Goto TEMP1
+	Get FILENAME String
+	Padding 4
+	Get OFFSET Long
+	Get SIZE Long
+
+	Log FILENAME OFFSET SIZE 1
+Next A
+
