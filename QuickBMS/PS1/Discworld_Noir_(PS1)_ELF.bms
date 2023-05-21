@@ -1,0 +1,28 @@
+# ================================================================================
+# Discworld Noir (PS1)
+# CDIMAGE.ELF extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# There are no filenames or file types stored
+
+
+Get FILES Long
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+	Get MISC2 Short
+	Get MISC3 Short
+
+	String FILENAME P "DWN_%A%"
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x10
+Next A
+
+
