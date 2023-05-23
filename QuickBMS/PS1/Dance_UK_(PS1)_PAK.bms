@@ -1,0 +1,31 @@
+# ================================================================================
+# Dance UK (PS1)
+# DATA.PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILES Long
+
+Math ENTRY1 = 0x14							# Name offsets
+XMath ENTRY2 "(FILES * 4) + ENTRY1"					# File sizes
+XMath ENTRY3 "(FILES * 4) + ENTRY2"					# File block offsets
+
+For A = 0 < FILES
+	Goto ENTRY1
+	Get NAME_OFF Long
+	Goto ENTRY2
+	Get SIZE Long
+	Goto ENTRY3
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY1 + 4
+	Math ENTRY2 + 4
+	Math ENTRY3 + 4
+Next A
+
