@@ -1,0 +1,19 @@
+# ================================================================================
+# Delta Force: Urban Warfare (PS1)
+# DCF extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "DCAT"
+Get FILES Short
+Get MISC1 Short
+
+For A = 0 < FILES
+	GetDString FILENAME 0x0c
+	Get JUNK Long
+	Get SIZE Long
+	Get OFFSET Long
+	Log FILENAME OFFSET SIZE
+Next A
+
