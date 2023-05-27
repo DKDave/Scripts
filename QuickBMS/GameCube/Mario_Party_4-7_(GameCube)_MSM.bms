@@ -1,10 +1,10 @@
 # ================================================================================
-# Mario Party 4 (GameCube)
+# Mario Party 4/5/6/7 (GameCube)
 # MSM audio extract
 # QuickBMS script by DKDave, 2023
 # ================================================================================
 
-# This script extracts all of the audio files from the .MSM archive and outputs them as playable .dsp files
+# This script extracts all of the audio files from the .MSM archives and outputs playable .dsp files
 
 
 Endian Big
