@@ -1,0 +1,90 @@
+# ================================================================================
+# Mario Party 4 (GameCube)
+# MSM audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# This script extracts all of the audio files from the .MSM archive and outputs them as playable .dsp files
+
+
+Endian Big
+
+IDString "GSND"
+Goto 0x20
+Get ENTRY1 Long
+Math ENTRY1 + 0x20
+Get TABLE_SIZE Long
+
+Goto 0x38
+Get SECTION_DATA Long
+Get JUNK Long									# Section table size
+Get AUDIO_START Long								# Start of main DSP audio data
+
+
+# Read main index table
+
+XMath FILES1 "(TABLE_SIZE - 0x20) / 0x20"
+
+For A = 0 < FILES1
+	Goto ENTRY1
+	Get JUNK Long
+	Get SECTION_OFF Long
+	Get JUNK Long
+	Get AUDIO_OFF Long
+	Math SECTION_OFF + SECTION_DATA
+	Math AUDIO_OFF + AUDIO_START
+	Goto SECTION_OFF
+	Goto 8 0 SEEK_CUR
+	Get ENTRY2 Long
+	Math ENTRY2 + SECTION_OFF
+	Math TABLE2 = ENTRY2
+
+# Process each audio table
+
+	For B = 0
+		Goto ENTRY2
+		Get ID Short
+
+		If ID = 0xFFFF
+			Break
+		Endif
+
+		Get JUNK Short
+		Get OFFSET Long
+		Math OFFSET + AUDIO_OFF
+		Goto 6 0 SEEK_CUR
+		Get SAMP_RATE Short
+		Get TYPE Byte
+		Get SAMP_COUNT Threebyte
+		XMath SIZE "((SAMP_COUNT + 13) / 14) * 8"
+		XMath NIB_COUNT "SIZE * 2"
+		Goto 8 0 SEEK_CUR
+		Get COEFF_OFF Long
+		Math COEFF_OFF + TABLE2
+		Math COEFF_OFF + 8
+
+		Log MEMORY_FILE 0 0
+		PutVarChr MEMORY_FILE 0x1b 0 Byte
+		PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+		PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+		PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+		Append
+		Log MEMORY_FILE COEFF_OFF 0x20
+		Append
+
+		PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+		Append
+		Log MEMORY_FILE OFFSET SIZE
+		Append
+
+		String FILENAME P "%ID%.dsp"
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+
+		Math ENTRY2 + 0x20
+	Next B
+
+	Math ENTRY1 + 0x20
+Next A
