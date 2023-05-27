@@ -1,0 +1,82 @@
+# ================================================================================
+# Railway Empire 2
+# FUK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "xV4\x12"
+
+Goto 0x10
+Get FILES Long
+Goto 0x20
+Get NAMES Long
+Math ENTRY = 0x30
+
+
+# Create array of names
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get TYPE LongLong								# 0 = file, 1 = folder
+	Get PARENT LongLong							# parent folder index for this folder or file
+	Get OFFSET LongLong
+	Get ZSIZE LongLong
+	Get SIZE LongLong
+	Goto NAMES
+	Get FILENAME String
+	SavePos NAMES
+
+	PutArray 0 A FILENAME
+
+	Math ENTRY + 0x28
+Next A
+
+
+# Process file table
+
+Math ENTRY = 0x30
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get TYPE LongLong								# 0 = file, 1 = folder
+	Get PARENT LongLong							# parent folder index for this folder or file
+	Get OFFSET LongLong
+	Get ZSIZE LongLong
+	Get SIZE LongLong
+
+	If TYPE = 0
+		GetArray FILENAME 0 A
+		GetArray FOLDER 0 PARENT
+		String FOLDER + "\"
+
+# Create folder structure for this file
+
+		For B
+			XMath F_IDX "(PARENT * 0x28) + 0x30"
+			Goto F_IDX
+			Get JUNK LongLong					# Should be 1 for folder
+			Get PARENT LongLong
+
+			If PARENT = -1
+				Break
+			Else
+				GetArray FTEMP 0 PARENT
+				String FOLDER P "%FTEMP%\%FOLDER%"
+			Endif
+
+		Next B
+
+		String FILENAME P "%FOLDER%%FILENAME%"
+
+		If ZSIZE = SIZE
+			Log FILENAME OFFSET ZSIZE
+		Else
+			CLog FILENAME OFFSET ZSIZE SIZE
+		Endif
+
+	Endif
+
+	Math ENTRY + 0x28
+Next A
+
