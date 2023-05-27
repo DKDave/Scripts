@@ -1,0 +1,32 @@
+# ================================================================================
+# Bio F.R.E.A.K.S. (PS1)
+# SND extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get OFFSET Long
+
+	If OFFSET = 0
+		Break
+	Endif
+
+	Goto OFFSET
+	Goto 0x0c 0 SEEK_CUR
+	Get SIZE Long
+	ReverseLong SIZE
+	Goto 0x10 0 SEEK_CUR
+	GetDString FILENAME 0x10
+	Math SIZE + 0x30
+	String FILENAME P "%TEMPNAME%\%FILENAME%.vag"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 4
+Next A
+

@@ -1,0 +1,21 @@
+# ================================================================================
+# Bio F.R.E.A.K.S. (PS1)
+# MUK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+For A = 0
+	GetDString FILENAME 8
+
+	If FILENAME = ""
+		Break
+	Endif
+
+	Get SIZE Long
+	Get OFFSET Long
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
