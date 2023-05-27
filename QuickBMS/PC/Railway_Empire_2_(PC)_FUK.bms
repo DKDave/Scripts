@@ -1,8 +1,10 @@
 # ================================================================================
-# Railway Empire 2
+# Railway Empire 2 (PC)
 # FUK extract
 # QuickBMS script by DKDave, 2023
 # ================================================================================
+
+# Note: The filenames don't work correctly if using QuickBMS v0.12, but are fine with v0.11
 
 
 IDString "xV4\x12"
