@@ -1,0 +1,37 @@
+# ================================================================================
+# Stuart Little 3: Big Photo Adventure (PS2)
+# SPH / SPB extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the SPH file
+
+
+Open FDDE "SPB" 1
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+Goto 4
+Get FILES Long
+
+For A = 0 < FILES
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Get RATE Short
+	Get MISC2 Short
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 RATE Long
+	Endian Little
+
+	String FILENAME P "SL3_%A%.vag"
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+Next A
+
