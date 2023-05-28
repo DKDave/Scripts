@@ -1,0 +1,33 @@
+# ================================================================================
+# Unison: Rebels Of Rhythm And Dance (PS2)
+# UNISON.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Run this script on the SLPS_250.10 file
+# There are no filenames or file types to identify anything easily
+
+
+Open FDSE "UNISON.DAT" 1
+Get FILE_END asize 1
+
+Math ENTRY = 0x212f88
+
+For A = 0 < 1642
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get OFFSET2 Long
+
+	If OFFSET2 = 0
+		XMath SIZE "FILE_END - OFFSET"
+	Else
+		Math OFFSET2 * 0x800
+		XMath SIZE "OFFSET2 - OFFSEt"
+	Endif
+
+	String FILENAME P "UNISON_%A%"
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 4
+Next A
