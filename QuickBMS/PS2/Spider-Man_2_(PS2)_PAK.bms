@@ -1,0 +1,28 @@
+# ================================================================================
+# Spider-Man 2 (PS2)
+# SOUNDS.PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Goto 0x18
+Get DATA_START Long
+Goto 0x1dc
+Get FILES Long
+
+Math ENTRY = 0x258
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x1c
+	String FILENAME + ".wbk"
+	Get JUNK Long
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get SIZE Long
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x28
+Next A
+
