@@ -1,0 +1,48 @@
+# ================================================================================
+# Platinum Games
+# .PKZ Extract
+# QuickBMS script by DKDave, 2023 (v2)
+# ================================================================================
+
+# Used in Astral Chain (2019), Bayonetta 3 (2022) + others
+
+
+IDString "pkzl"
+
+Goto 0x10
+Get FILES Long
+Get ENTRY Long
+XMath NAMES "ENTRY + (FILES * 0x20)"
+Goto NAMES
+Get COMP_TYPE String
+
+If COMP_TYPE = "None"
+	Comtype ""
+Elif COMP_TYPE = "ZStandard"
+	Comtype zstd
+Elif COMP_TYPE = "OodleKraken"
+	Comtype oodle
+Else
+	Print "Unknown compression:	%COMP_TYPE%"
+	Exit
+Endif
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF LongLong
+	Math NAME_OFF + NAMES
+	Get SIZE LongLong
+	Get OFFSET LongLong
+	Get ZSIZE LongLong
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
