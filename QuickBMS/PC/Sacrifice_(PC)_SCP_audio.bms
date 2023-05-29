@@ -1,0 +1,62 @@
+# ================================================================================
+# Sacrifice (PC)
+# .SCP audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "WAD>"
+
+Get DIR Long
+Get SIZE Long
+Get ZSIZE asize
+Math ZSIZE - DIR
+
+CLog MEMORY_FILE DIR ZSIZE SIZE								# file table
+
+Math ENTRY = 0x1c
+Math OFFSET = 0x14
+Math FILE_END = SIZE
+
+For A = 0
+	If ENTRY = FILE_END
+		Break
+	Endif
+
+	Goto ENTRY -1
+	GetDString TYPE1 4 -1
+	GetDString TYPE2 4 -1
+	Get ZSIZE Long -1
+	Get SIZE Long -1
+	Get MISC1 Long -1
+	Get TYPE Long -1									# 1 = folder
+
+	If TYPE2 = "RDLF"
+		String FOLDER_NAME = TYPE1
+	Endif
+
+	If TYPE2 = "TXET" And FOLDER_NAME = "PMAS"
+		Goto OFFSET
+		GetDString FILENAME ZSIZE
+		String FILENAME + ".wav"
+	Endif
+
+	If TYPE2 = "PMAS" And FOLDER_NAME = "PMAS"
+		Goto OFFSET
+		Goto 0x20 0 SEEK_CUR
+		SavePos OFFSET2
+		Goto 4 0 SEEK_CUR
+		Get SIZE2 Long
+		Math SIZE2 + 8
+
+		Log FILENAME OFFSET2 SIZE2
+	Endif
+
+	If TYPE <> 1
+		Math OFFSET + ZSIZE
+	Endif
+
+	Math ENTRY + 0x1c
+
+Next A
+
