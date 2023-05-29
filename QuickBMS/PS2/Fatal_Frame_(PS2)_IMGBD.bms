@@ -1,0 +1,53 @@
+# ================================================================================
+# Fatal Frame (aka Zero/Project Zero) (PS2)
+# IMG_HD/IMG_BD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on IMG_HD.BIN - place IMG_BD.BIN and SLUS_203.88 in the same folder
+
+
+Open FDSE "IMG_BD.BIN" 1
+Open FDSE "SLUS_203.88" 2
+
+Get ENTRIES asize
+Math ENTRIES / 8
+Math FNAMES = 0x58b7df
+
+For A = 0
+	Goto FNAMES 2
+	GetDString TEMP1 1 2
+
+	If TEMP1 = ";"
+		Break
+	Endif
+
+	If TEMP1 = "\"
+		Get JUNK Byte 2
+	Else
+		Goto FNAMES 2
+	Endif
+
+	GetCT FILENAME String 0x3a 2
+	GetCT FNUM String 0x2c 2
+	SavePos FNAMES 2
+
+	String FILENAME2 = FILENAME
+	String FILENAME2 $ "_"
+	String FILENAME - FILENAME2
+	String FILENAME2 R "_" "."
+	String FILENAME + FILENAME2
+	Math FNUM = FNUM
+
+	XMath ENTRY "FNUM * 8"
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+
+	If SIZE <> 0
+		Math OFFSET * 0x800
+		Log FILENAME OFFSET SIZE 1
+	Endif
+
+Next A
+
