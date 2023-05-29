@@ -1,0 +1,38 @@
+# ================================================================================
+# Avatar: Into The Inferno (PS2)
+# PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Some of the extracted files are also PAK archives which can be further extracted with this script
+
+
+IDString "kcap"
+
+Goto 8
+Get ENTRY Long
+Get JUNK Long
+Get NAMES Long
+Get FILES Long
+Math NAMES + ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math ENTRY + 0x18
+Next A
+
+
