@@ -1,0 +1,36 @@
+# ================================================================================
+# Armored Core 2: Another Age (PS2)
+# BRIEF*.VVV audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Most of the vag files have names within them, the ones that don't have been given generic names
+# There are also a few duplicates which can be ignored
+
+
+Get TEMPNAME basename
+
+For A = 0
+	FindLoc OFFSET String "VAGp" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	Goto 12 0 SEEK_CUR
+	Get SIZE Long
+	ReverseLong SIZE
+	Math SIZE + 0x30
+	Goto 0x10 0 SEEK_CUR
+	GetDString FILENAME 0x10
+
+	If FILENAME = "\\Server_mng\snd"
+		String FILENAME P "%TEMPNAME%_%A%"
+	Endif
+
+	String FILENAME + ".vag"
+
+	Log FILENAME OFFSET SIZE
+Next A
+
