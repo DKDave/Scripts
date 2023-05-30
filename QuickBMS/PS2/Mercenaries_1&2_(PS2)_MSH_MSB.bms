@@ -1,37 +1,41 @@
 # ================================================================================
-# Mercenaries & Mercenaries 2: World In Flames (PS2)
+# Mercenaries: Playground Of Destruction & Mercenaries 2: World In Flames (PS2)
 # MSH/MSB audio extract
-# QuickBMS script by DKDave, 2020
+# QuickBMS script by DKDave, 2023
 # ================================================================================
 
-# This script extracts the audio data and saves them as playable .vag files
+# Use this script on the MSH file
+# Audio is extracted as playable .vag files
 
-
-Set MEMORY_FILE binary "VAGp\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 Open FDDE "MSB" 1
 Get TEMPNAME basename
 
 Goto 0x08
-Get ENTRIES Long
+Get FILES Long
 
-For A = 1 To ENTRIES
+For A = 0 < FILES
 	Get SIZE Long
-	Get FILE_ID Long
+	Get MISC1 Long
 	Get OFFSET Long
 	Get SAMP_RATE Long
-	ReverseLong SAMP_RATE
-	ReverseLong SIZE
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x2f 0 Byte
+	PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+	Endian Big
 	PutVarChr MEMORY_FILE 0x0c SIZE Long
 	PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
-	ReverseLong SIZE
+	Endian Little
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	Get MEM_SIZE asize -1
 
 	String FILENAME P "%TEMPNAME%_%A%.vag"
-
-	Log FILENAME 0 48 -1
-	Append
-	Log FILENAME OFFSET SIZE 1
-	Append
-
+	Log FILENAME 0 MEM_SIZE -1
 Next A
 
