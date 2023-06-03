@@ -1,0 +1,82 @@
+# ================================================================================
+# Resident Evil 0 (GameCube)
+# Extract data from .arc files
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# If the .arc file contains an .sdir table, the audio files will be extracted as playable .dsp files
+
+
+Endian Big
+
+Get TEMPNAME basename
+Goto 4
+Get FILES Long
+Get ENTRY Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	GetDString FILENAME 8
+	GetDString EXT 4
+
+	If EXT = "sdir"									# audio table for associated .sam audio data
+		Open FDDE "sam" 1
+		Math TABLE = OFFSET
+		Math ENTRY = OFFSET
+
+		For B = 0
+			Goto ENTRY
+			Get ID Short
+
+			If ID = 0xFFFF
+				Break
+			Endif
+
+			Get JUNK Short
+			Get OFFSET2 Long
+			Goto 6 0 SEEK_CUR
+			Get SAMP_RATE Short
+			Get TYPE Byte							# 0 = DSP
+			Get SAMP_COUNT Threebyte
+			XMath SIZE2 "((SAMP_COUNT + 13) / 14) * 8"				# actual data size
+			XMath NIB_COUNT "SIZE2 * 2"
+			Goto 8 0 SEEK_CUR
+			Get COEFF_OFF Long
+			Math COEFF_OFF + TABLE
+			Math COEFF_OFF + 8
+
+			Log MEMORY_FILE 0 0
+			PutVarChr MEMORY_FILE 0x1b 0 Byte
+			PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+			PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+			PutVarChr MEMORY_FILE 8 SAMP_RATE Long
+
+			Append
+			Log MEMORY_FILE COEFF_OFF 0x20
+			Append
+
+			PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+			Append
+			Log MEMORY_FILE OFFSET2 SIZE2 1
+			Append
+
+			String FILENAME P "%ID%.dsp"
+			Get MEM_SIZE asize -1
+			Log FILENAME 0 MEM_SIZE -1
+
+			Math ENTRY + 0x20
+		Next B
+
+	Else
+		If SIZE <> 0
+			String FILENAME P "%FILENAME%.%EXT%"
+			Log FILENAME OFFSET SIZE
+		Endif
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
