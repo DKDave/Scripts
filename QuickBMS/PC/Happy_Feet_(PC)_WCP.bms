@@ -1,0 +1,110 @@
+# ================================================================================
+# Happy Feet (PC)
+# WCP audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "sbk" 1
+
+Log MEMORY_FILE2 0 0
+PutVarChr MEMORY_FILE2 0x2b 0 Byte
+PutVarChr MEMORY_FILE2 0 0x46464952 Long
+PutVarChr MEMORY_FILE2 8 0x45564157 Long
+PutVarChr MEMORY_FILE2 0x0c 0x20746d66 Long
+PutVarChr MEMORY_FILE2 0x10 0x10 Long
+PutVarChr MEMORY_FILE2 0x14 1 Short									# Always PCM
+PutVarChr MEMORY_FILE2 0x24 0x61746164 Long
+
+Math OFFSET = 0
+Get FILE_END asize
+Get TEMPNAME basename
+
+For A = 0
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	Get ZSIZE Long
+	SavePos OFFSET
+
+	Append
+	CLog MEMORY_FILE OFFSET ZSIZE 0x10000000
+	Append
+
+	Math OFFSET + ZSIZE
+Next A
+
+
+# Extract audio files
+
+Math ENTRY = 0x40
+
+For A = 0 < 256											# Max entries in main file table
+	Goto ENTRY -1
+	Get FILES Long -1
+	Get ENTRY2 Long -1
+
+	If FILES <> 0
+		For B = 0 < FILES
+			Goto ENTRY2 -1
+			Get JUNK Long -1
+			Get OFFSET Long -1
+
+			If OFFSET <> 0 And A = 0x5a							# 0x5a = audio files, sbk and str
+				Goto OFFSET -1
+				Goto 0x10 -1 SEEK_CUR
+				GetDString NAME 0x20 -1
+				Goto 0xc -1 SEEK_CUR
+
+				GetDString NAME2 0x20 -1
+				Get OFFSET2 Long -1						# 0xFFFFFFFF = separate str file, else offset in sbk
+				Get SIZE Long -1
+				Goto 12 -1 SEEK_CUR
+
+				Get CODEC Short -1						# Always 1 = PCM
+				Get CHANNELS Short -1
+				Get RATE Long -1
+				Get BYTE_RATE Long -1
+				Get ALIGN Short -1
+				Get BITS Short -1
+
+				XMath RIFF_SIZE "SIZE + 0x24"
+				PutVarChr MEMORY_FILE2 4 RIFF_SIZE Long
+				PutVarChr MEMORY_FILE2 0x16 CHANNELS Short
+				PutVarChr MEMORY_FILE2 0x18 RATE Long
+				PutVarChr MEMORY_FILE2 0x1c BYTE_RATE Long
+				PutVarChr MEMORY_FILE2 0x20 ALIGN Short
+				PutVarChr MEMORY_FILE2 0x22 BITS Short
+				PutVarChr MEMORY_FILE2 0x28 SIZE Long
+				String NAME + ".wav"
+
+				If OFFSET2 <> 0xFFFFFFFF						# sbk files
+					Log NAME 0 0x2c -2
+					Append
+					Log NAME OFFSET2 SIZE 1
+					Append
+				Else								# str files
+					String TEMP1 = NAME2
+					String TEMP1 < "\"
+					String NAME2 - TEMP1
+					String NAME2 + ".str"
+					Open FDSE NAME2 2
+					Log NAME 0 0x2c -2
+					Append
+					Log NAME 0 SIZE 2
+					Append
+				Endif
+
+			Endif
+
+			Math ENTRY2 + 8
+		Next B
+
+	Endif
+
+	Math ENTRY + 8
+Next A
+
+
