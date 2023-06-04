@@ -1,0 +1,49 @@
+# ================================================================================
+# MTV Music Generator 3 (PS2)
+# WBD / DBD audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Input file is OUTPUT.WBD
+
+
+Open FDSE "DBBODY.DBD" 1
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 1 Long						# 16-bit PCM
+PutVarChr MEMORY_FILE 0x0c 44100 Long
+PutVarChr MEMORY_FILE 0x10 1 Long						# Channels
+PutVarChr MEMORY_FILE 0x14 0 Long						# Interleave
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+Goto 8
+Get FILES Long
+Math ENTRY = 0x2a6c
+
+For A = 0 < FILES
+	Goto ENTRY
+	Goto 0x20 0 SEEK_CUR
+	Get SIZE Long
+	Get OFFSET Long
+	Get JUNK Long
+	Get FILENAME String
+	String FILENAME + ".ss2"
+
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE 1
+	Append
+
+	Math ENTRY + 0x3c
+Next A
+
+
