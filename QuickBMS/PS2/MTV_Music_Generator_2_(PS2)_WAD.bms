@@ -1,0 +1,58 @@
+# ================================================================================
+# MTV Music Generator 2 (PS2)
+# WAD.IND / WAD.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on WAD.IND and put WAD.DAT in the same folder
+
+
+Open FDSE "WAD.DAT" 1
+
+Get COUNT1 Long
+Get FILES Long
+XMath TABLE2 "(COUNT1 * 0x20) + 8"
+
+Math ENTRY1 = 8
+
+For A = 0 < COUNT1
+	Goto ENTRY1
+	GetDString NAME 0x1c
+	Get PARENT_ID Short
+	Get ID Short								# If bit 15 is set, it's a folder IDX, else a file IDX
+
+	If PARENT_ID & 0x8000							# Folder
+		PutArray 0 ID NAME
+		XMath TEMP1 "PARENT_ID & 0x7fff"					# Folder ID, not position in table
+		PutArray 1 ID TEMP1
+
+	Else									# File
+		Math PARENT_ID & 0x7fff
+		String FNAME = ""
+
+		For B = 0								# Get folder structure
+			If PARENT_ID = 0
+				Break
+			Endif
+
+			GetArray TEMPNAME 0 PARENT_ID				# parent folder name
+			GetArray TEMP2 1 PARENT_ID					# parent idx for this folder
+
+			String FNAME P "%TEMPNAME%\%FNAME%"
+			Math PARENT_ID = TEMP2
+		Next B
+
+		String FILENAME P "%FNAME%%NAME%"
+
+		XMath ENTRY2 "TABLE2 + (ID * 8) - 8"					# 1-based file index values
+		Goto ENTRY2
+		Get OFFSET Long
+		Math OFFSET * 0x800
+		Get SIZE Long
+
+		Log FILENAME OFFSET SIZE 1
+
+	Endif
+
+	Math ENTRY1 + 0x20
+Next A
