@@ -1,0 +1,39 @@
+# ================================================================================
+# Frogger 2: Swampy's Revenge (PS1)
+# FROGGER.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype coreonline
+
+IDString "xV4\x12"
+
+Get FILES Long
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Math OFFSET + 0x4000
+	Get ZSIZE Long
+
+	String FILENAME P "F2_%A%"
+
+	Goto OFFSET
+	Get TYPE Long
+
+	If TYPE = 0x32414c46
+		Get SIZE Long
+		Math ZSIZE - 8
+		Math OFFSET + 8
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+	Math ENTRY + 12
+Next A
+
