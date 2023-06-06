@@ -1,0 +1,35 @@
+# ================================================================================
+# Wing Commander III & IV (PS1)
+# LIB extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+PutVarChr MEMORY_FILE 0x10 0x112B0000 Long
+
+Get FILES Short
+
+For A = 0 < FILES
+	Get SIZE Long
+	Get OFFSET Long
+	GetDString FILENAME 0x10
+	String TEMP1 = FILENAME
+	String TEMP1 $ ".tai"
+
+	If TEMP1 = ".tai"								# Add vag header to raw audio
+		Endian Big
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		Endian Little
+		String FILENAME R ".tai" ".vag"
+		Log FILENAME 0 0x30 -1
+		Append
+		Log FILENAME OFFSET SIZE
+		Append
+	Else
+		Log FILENAME OFFSET SIZE
+	Endif
+
+Next A
