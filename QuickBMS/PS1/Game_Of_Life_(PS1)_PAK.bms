@@ -1,0 +1,34 @@
+# ================================================================================
+# Game Of Life (PS1)
+# PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# This script extracts the basic files.  Vag files will be extracted with their names.  Some files have unknown compression
+
+
+Get TEMPNAME basename
+Goto 4
+Get FILES Long
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Goto OFFSET
+	Get TYPE Long
+
+	If TYPE = 0x70474156
+		Goto 0x1c 0 SEEK_CUR
+		GetDString FILENAME 0x10
+		String FILENAME + ".vag"
+		Log FILENAME OFFSET SIZE
+	Else
+		String FILENAME P "%TEMPNAME%_%A%"
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math ENTRY + 8
+Next A
+
