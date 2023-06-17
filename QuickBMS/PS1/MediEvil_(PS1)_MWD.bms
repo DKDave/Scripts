@@ -1,0 +1,39 @@
+# ================================================================================
+# MediEvil (PS1)
+# MEDRES.MWD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the MEDIEVIL.EXE file and put MEDRES.MWD in the same folder
+
+
+Comtype PP20
+
+Open FDSE "MEDRES.MWD" 1
+
+Math ENTRY = 0xad064
+
+For A = 0 < 0x316
+	Goto ENTRY
+	Goto 12 0 SEEK_CUR
+	Get OFFSET Long
+
+	If OFFSET <> 0
+		Math OFFSET * 0x800
+		Goto 8 0 SEEK_CUR
+		Get ZSIZE Long
+		Get SIZE Long
+		Math SIZE & 0x1FFFFFF						# bit 25 = compression flag
+
+		String FILENAME P "MEDRES_%A%"
+
+		If SIZE > ZSIZE
+			CLog FILENAME OFFSET ZSIZE SIZE 1
+		Else
+			Log FILENAME OFFSET ZSIZE 1
+		Endif
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
