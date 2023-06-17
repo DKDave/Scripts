@@ -1,0 +1,34 @@
+# ================================================================================
+# I Have No Mouth And I Must Scream (PC)
+# .RES extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get TEMPNAME basename
+
+Goto -8
+Get ENTRY Long
+Get FILES Long
+Goto ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+
+	Goto OFFSET
+	GetDString TYPE 4
+	String FILENAME P "%TEMPNAME%_%A%"
+
+	If TYPE = "RIFF"
+		String FILENAME + ".wav"
+	Elif TYPE = "FORM"
+		String FILENAME + ".mid"
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 8
+Next A
+
