@@ -1,0 +1,47 @@
+# ================================================================================
+# Star Wars: Revenge Of The Sith (XBox)
+# .RPX audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio is extracted as playable .wav files
+
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 47 0
+
+PutVarChr MEMORY_FILE 0 0x46464952 Long
+PutVarChr MEMORY_FILE 8 0x45564157 Long
+PutVarChr MEMORY_FILE 12 0x20746d66 Long
+PutVarChr MEMORY_FILE 16 0x14 Long
+PutVarChr MEMORY_FILE 20 0x69 Short							# codec - XBox ADPCM
+PutVarChr MEMORY_FILE 22 0x01 Short							# channels
+PutVarChr MEMORY_FILE 24 0x5622 Long						# sample rate
+PutVarChr MEMORY_FILE 28 0x2b11 Long						# byte rate
+PutVarChr MEMORY_FILE 0x20 0x24 Short						# frame size for mono
+PutVarChr MEMORY_FILE 0x22 0x04 Short						# bits
+PutVarChr MEMORY_FILE 0x24 0x00400002 Long						# extra data
+PutVarChr MEMORY_FILE 0x28 0x61746164 Long
+
+Goto 4
+Get FILES Long
+Get TEMPNAME basename
+Goto 0x20
+
+For A =  0 < FILES
+	GetDString FILENAME 0x20
+	String FILENAME + ".wav"
+	Get OFFSET Long
+	Get SIZE Long
+	Get JUNK Long
+
+	XMath RIFF_SIZE "SIZE + 0x28"
+	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
+	PutVarChr MEMORY_FILE 0x2c SIZE Long
+
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+Next A
+
