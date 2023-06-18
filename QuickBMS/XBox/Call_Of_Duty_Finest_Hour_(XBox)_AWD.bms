@@ -1,78 +1,67 @@
 # ================================================================================
-# Call Of Duty: Finest Hour (XBOX)
-# .awd extract
-# QuickBMS script by Dave, 2020
+# Call Of Duty: Finest Hour (XBox)
+# AWD audio extract
+# QuickBMS script by DKDave, 2020 (updated 2023)
 # ================================================================================
 
-# This script extracts the audio files and creates playable .wav files
+# Audio is extracted as playable .wav files
 
 
 Goto 0x08
-Get OFFSET Long								# start of audio data
-Goto 0x30
-Math FILE_ENTRY = 0x6c							# start of file table
+Get OFFSET Long
+Goto 0x5c
+Get NAME1 String
+Padding 4
+SavePos ENTRY
 
 Log MEMORY_FILE 0 0
-PutVarChr MEMORY_FILE 47 0
+PutVarChr MEMORY_FILE 0x2f 0
 
 # Set up default header values
 
 PutVarChr MEMORY_FILE 0 0x46464952 Long					# "RIFF"
 PutVarChr MEMORY_FILE 8 0x45564157 Long					# "WAVE"
-PutVarChr MEMORY_FILE 12 0x20746d66 Long					# "fmt "
-PutVarChr MEMORY_FILE 16 0x14 Long						# header size, including extra data
-PutVarChr MEMORY_FILE 20 0x69 Short						# codec ID (XBox ADPCM)
-PutVarChr MEMORY_FILE 22 0x01 Short						# channels (mono)
-PutVarChr MEMORY_FILE 32 0x24 Short						# block align (36 for mono)
-PutVarChr MEMORY_FILE 34 0x04 Short						# bits per sample
-PutVarChr MEMORY_FILE 36 0x00400002 Long					# extra info (64 nibbles per block)
-PutVarChr MEMORY_FILE 40 0x61746164 Long					# "data"
+PutVarChr MEMORY_FILE 0x0c 0x20746d66 Long					# "fmt "
+PutVarChr MEMORY_FILE 0x10 0x14 Long					# header size, including extra data
+PutVarChr MEMORY_FILE 0x14 0x69 Short					# codec ID (XBox ADPCM)
+PutVarChr MEMORY_FILE 0x16 0x01 Short					# channels
+PutVarChr MEMORY_FILE 0x20 0x24 Short					# block align (36 for mono)
+PutVarChr MEMORY_FILE 0x22 0x04 Short					# bits per sample
+PutVarChr MEMORY_FILE 0x24 0x00400002 Long					# extra info (64 nibbles per block)
+PutVarChr MEMORY_FILE 0x28 0x61746164 Long					# "data"
 
-Get FOLDER_NAME basename
+For A = 0
+	Goto ENTRY
+	Get JUNK Long
+	Get NAME_OFF Long
 
-
-For
-	Goto FILE_ENTRY
-	Get JUNK Long
-	Get FNAME_OFFSET Long
-	Get JUNK Long
-	Get JUNK Long
-	Get SAMP_RATE Long
-	Get JUNK Long
-	Get SIZE Long
-
-	If FNAME_OFFSET = 0						# No more entries
+	If NAME_OFF = 0
 		Break
 	Endif
 
-	Goto FNAME_OFFSET
-	Get FILENAME2 String
+	Goto 8 0 SEEK_CUR
+	Get RATE Long
+	Get JUNK Long							# bits ?
+	Get SIZE Long
+	Goto NAME_OFF
+	Get FILENAME String
+	String FILENAME + ".wav"
+	Padding 4
+	SavePos ENTRY
 
-	SavePos FILE_ENTRY
-	Xmath MOD1 "FILE_ENTRY % 4"
-
-	If MOD1 > 0
-		XMath FILE_ENTRY "FILE_ENTRY + (4 - MOD1)"			# Next entry
-	Endif
-
-	String FILENAME P "%FOLDER_NAME%\%FILENAME2%.wav"
-
-	PutVarChr MEMORY_FILE 24 SAMP_RATE Long
-	XMath BYTE_RATE "SAMP_RATE / 2"
-	PutVarChr MEMORY_FILE 28 BYTE_RATE Long
-	PutVarChr MEMORY_FILE 44 SIZE Long
-	XMath RIFF_SIZE "SIZE +40"
+	PutVarChr MEMORY_FILE 0x18 RATE Long
+	XMath BYTE_RATE "RATE / 2"
+	PutVarChr MEMORY_FILE 0x1c BYTE_RATE Long
+	PutVarChr MEMORY_FILE 0x2c SIZE Long
+	XMath RIFF_SIZE "SIZE + 0x28"
 	PutVarChr MEMORY_FILE 4 RIFF_SIZE Long
 
-	Log FILENAME 0 48 -1						# RIFF/WAVE header
+	Log FILENAME 0 0x30 -1
 	Append
-	Log FILENAME OFFSET SIZE						# raw audio data
+	Log FILENAME OFFSET SIZE
 	Append
 
 	Math OFFSET + SIZE
-
-Next
-
-
+Next A
 
 
