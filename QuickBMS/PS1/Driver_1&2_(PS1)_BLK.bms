@@ -1,0 +1,52 @@
+# ================================================================================
+# Driver 1 & 2 (PS1)
+# BLK audio extract (VOICES.BLK & VOICES2.BLK)
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILE_END asize
+Get TEMPNAME basename
+Math ENTRY = 0
+Math FNUM = 0
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+For A = 0
+	Goto ENTRY
+	Get OFFSET Long
+
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	Get FILES Long
+	XMath DATA_START "OFFSET + 4 + (ENTRIES * 0x10)"
+
+	For B = 0 < FILES
+		Get OFFSET2 Long
+		Math OFFSET2 + DATA_START
+		Get SIZE Long
+		Get MISC1 Long
+		Get SAMP_RATE Long
+
+		Endian Big
+		PutVarChr MEMORY_FILE 0x0c SIZE Long
+		PutVarChr MEMORY_FILE 0x10 SAMP_RATE Long
+		Endian Little
+
+		String FILENAME P "%TEMPNAME%_%FNUM%.vag"
+		Log FILENAME 0 0x30 -1
+		Append
+		Log FILENAME OFFSET2 SIZE
+		Append
+
+		Math FNUM + 1
+	Next B
+
+	Math ENTRY + 4
+Next A
+
