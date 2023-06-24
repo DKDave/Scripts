@@ -1,0 +1,44 @@
+# ================================================================================
+# Shadow Man: 2econd Coming (PS2)
+# DIR/BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the PS2DATA.DIR file
+# No filenames or extensions are stored
+
+
+Comtype RNC
+
+Open FDDE "BIN" 1
+
+Math ENTRY = 4
+
+For A = 0 < 0x400
+	Goto ENTRY
+	Get START_IDX Long	
+	Get COUNT Long
+	XMath START_ENTRY "(START_IDX * 0x10) + 0x2004"
+
+	Goto START_ENTRY
+
+	For B = 0 < COUNT
+		Get MISC1 Long
+		Get OFFSET Long
+		Math OFFSET + 4
+		Get SIZE Long
+		Get ZSIZE Long
+		Math ZSIZE & 0x7FFFFFFF
+
+		String FILENAME P "SM2_%A%_%B%"
+
+		If ZSIZE = 0
+			Log FILENAME OFFSET SIZE 1
+		Else
+			CLog FILENAME OFFSET ZSIZE SIZE 1
+		Endif
+	Next B
+
+	Math ENTRY + 8
+Next A
+
