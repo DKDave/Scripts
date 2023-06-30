@@ -1,0 +1,28 @@
+# ================================================================================
+# Syphon Filter: The Omega Strain (PS2)
+# HOG extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+Get ENTRY Long
+Get NAMES Long
+Get DATA_START Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get OFFSET2 Long
+	XMath SIZE "OFFSET2 - OFFSET"
+	Math OFFSET + DATA_START
+
+	Goto NAMES
+	Get FILENAME String
+	SavePos NAMES
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 4
+Next A
