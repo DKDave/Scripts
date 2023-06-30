@@ -1,0 +1,26 @@
+# ================================================================================
+# X Files: Resist Or Serve
+# .EFS extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "EFS "
+Goto 8
+Get FILES Long
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long						# Decompressed size - not needed?
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET ZSIZE
+
+	Math ENTRY + 0x14
+Next A
+
