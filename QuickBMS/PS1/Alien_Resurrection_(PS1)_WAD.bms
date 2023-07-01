@@ -1,0 +1,35 @@
+# ================================================================================
+# Alien Resurrection (PS1)
+# WAD file extact
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: Use this script on the WAD files extracted from PACK.BIN
+
+
+Goto 0x10
+Get FILES Long
+Math OFFSET = 0x800
+Get TEMPNAME basename
+
+Math ENTRY = 0x20
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get TYPE Long
+	Get SIZE Long
+	ReverseLong TYPE
+	String TYPE N TYPE
+
+	String FILENAME P "%TEMPNAME%_%A%.%TYPE%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math OFFSET + SIZE
+	Goto OFFSET
+	Padding 0x800
+	SavePos OFFSET
+
+	Math ENTRY + 8
+Next A
+

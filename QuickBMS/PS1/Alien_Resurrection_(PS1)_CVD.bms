@@ -1,0 +1,43 @@
+# ================================================================================
+# Alien Resurrection (PS1)
+# CVD/CVS extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Extract all the files from the .PACK and .WAD archives first, then put all CVD and CVS files in the same folder for batch extraction
+# .vag files are created with the offset as part of the filename to eliminate duplicates from multiple CVD files
+
+
+IDString "CVD "
+
+Get FILES Long
+GetDString ARCHIVE 8
+String ARC_NAME P "%ARCHIVE%.cvs"
+Open FDSE ARC_NAME 1
+Get TEMPNAME basename
+
+Goto 0x10
+
+For A = 0 < FILES
+	Get SIZE Long
+	Get OFFSET Long
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x2f 0 Byte
+	PutVarChr MEMORY_FILE 0 0x70474156 Long
+	PutVarChr MEMORY_FILE 0x10 0x44ac0000 Long
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	Endian Little
+
+	String FILENAME P "%ARCHIVE%_%OFFSET|x%.vag"
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+Next A
+

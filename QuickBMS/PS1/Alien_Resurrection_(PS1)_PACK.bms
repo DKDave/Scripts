@@ -1,0 +1,16 @@
+# ================================================================================
+# Alien Resurrection (PS1)
+# PACK.BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get FILES Long
+
+For A = 0 < FILES
+	GetDString FILENAME 0x0c
+	Get SIZE Long
+	Get OFFSET Long
+	Log FILENAME OFFSET SIZE
+Next A
+
