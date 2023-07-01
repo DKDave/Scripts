@@ -1,0 +1,53 @@
+# ================================================================================
+# Koudelka (PS1)
+# Demux audio from .MCF videos
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Audio is saved as playable .ss2 files
+
+
+Get FILENAME basename
+String FILENAME + ".ss2"
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+PutVarChr MEMORY_FILE 0x0c 44100 Long					# Sample rate
+PutVarChr MEMORY_FILE 0x10 2 Long						# Channels
+PutVarChr MEMORY_FILE 0x14 0x690 Long					# Interleave
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+
+Get BLOCKS asize
+Math BLOCKS / 0x800
+Math OFFSET = 0
+
+For A = 0 < BLOCKS
+	Goto OFFSET
+	Get MISC Short
+	Get TYPE Short
+
+	If TYPE = 4								# audio block
+		Goto 0x3c 0 SEEK_CUR					# skip rest of block header
+		SavePos OFFSET2
+
+		Append
+		Log MEMORY_FILE OFFSET2 0x690
+		Append
+	Endif
+
+	Math OFFSET + 0x800
+Next A
+
+Get MEM_SIZE asize -1
+Math MEM_SIZE - 0x28
+PutVarChr MEMORY_FILE 0x24 MEM_SIZE Long
+Math MEM_SIZE + 0x28
+Log FILENAME 0 MEM_SIZE -1
+
