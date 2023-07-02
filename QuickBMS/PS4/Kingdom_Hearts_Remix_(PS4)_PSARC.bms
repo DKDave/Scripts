@@ -1,0 +1,75 @@
+# ================================================================================
+# Kingdom Hearts HD 1.5 + 2.5 Remix (PS4)
+# PSARC extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+ComType zlib_noerror
+
+Goto 8
+GetDString COMP_TYPE 4							# zlib
+Get DATA_START Long							# Offset of compressed filenames
+Get ENTRY_SIZE Long							# Size of each folder entry (0x1e)
+Get FILES Long
+Math FILES - 1								# First entry is filenames table
+XMath COMPS "(FILES * ENTRY_SIZE) + 0x3e"
+
+Goto 0x0c
+Get NAMES_TABLE Long
+Goto 0x35
+Get NAMES_SIZE Long
+Goto COMPS
+Get NAMES_ZSIZE Short
+
+CLog MEMORY_FILE NAMES_TABLE NAMES_ZSIZE NAMES_SIZE			# write filenames table to memory
+PutVarChr MEMORY_FILE NAMES_SIZE 0 Byte					# add 0 to end of filenames table to null-terminate final entry
+
+Math ENTRY = 0x3e
+	
+For A = 0 < FILES
+	Goto ENTRY
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get COMP_OFFSET Long						# First compressed block size offset
+	XMath COMP_OFFSET "COMPS + (COMP_OFFSET * 2)"
+	Get JUNK Byte
+	Get SIZE Long							# Total uncompressed size
+	Get JUNK Byte
+	Get OFFSET Long							# Start of compressed blocks of data for this file
+	Get FILENAME String -1
+
+	Log MEMORY_FILE2 0 0
+	Goto COMP_OFFSET
+
+	For B = 0
+		Get ZSIZE Short
+
+		If ZSIZE = 0						# Not compressed ?
+			Math ZSIZE = 0x10000
+			Append
+			Log MEMORY_FILE2 OFFSET ZSIZE
+			Append
+		Else
+			Append
+			CLog MEMORY_FILE2 OFFSET ZSIZE 0x10000		# Max decompressed block size
+			Append
+		Endif
+
+		Get MEM_SIZE asize -2
+
+		If MEM_SIZE = SIZE
+			Log FILENAME 0 MEM_SIZE -2
+			Break
+		Endif
+
+		Math OFFSET + ZSIZE
+
+	Next B
+
+	Math ENTRY + ENTRY_SIZE
+Next A
+
