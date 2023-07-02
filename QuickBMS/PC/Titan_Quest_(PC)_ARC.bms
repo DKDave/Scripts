@@ -1,0 +1,50 @@
+# ================================================================================
+# Titan Quest
+# ARC extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "ARC\x00"
+
+ComType zlib
+
+Goto 8
+Get FILES Long
+Get JUNK Long
+Get SIZE1 Long
+Get SIZE2 Long
+Get TABLE1_OFFSET Long
+
+Set FNAMES TABLE1_OFFSET
+Math FNAMES + SIZE1						# address of filenames
+Set FILE_TABLE FNAMES
+Math FILE_TABLE + SIZE2						# address of file table
+
+For A = 0 < FILES
+	Goto FILE_TABLE
+	Get COMP_FLAG Long
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get JUNK Long
+	Get FNAME_OFF Long
+	Math FNAME_OFF + FNAMES					# = address of filename text
+	Goto FNAME_OFF
+	Get FILENAME String
+
+	If COMP_FLAG = 1						# no compression
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+	If COMP_FLAG = 3						# zlib compression
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math FILE_TABLE + 0x2C
+Next A
