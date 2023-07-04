@@ -1,0 +1,78 @@
+# ================================================================================
+# Control (PC)
+# ,bin / .rmdp extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+
+QuickBMSVer -64								# Use quickbms_4gb_files.exe
+
+Open FDDE "rmdp" 1
+
+Goto 0x5
+Get FOLDER_COUNT Long
+Get FILES Long
+
+Math FOLDER_ENTRY = 0xb1
+XMath ENTRY "FOLDER_ENTRY + (FOLDER_COUNT * 0x30)"
+XMath NAMES "ENTRY + (FILES * 0x3c) + 0x18"
+
+
+# Create folder structure in array
+
+Math TEMP1 = FOLDER_ENTRY
+
+For A = 1 To FOLDER_COUNT
+	Goto TEMP1
+	Get FNAME_OFF LongLong
+	Get MISC1 LongLong
+	Get MISC2 LongLong
+	Get JUNK Long
+	Get MISC3 LongLong
+	Get PARENT_FOLDER LongLong
+
+	If FNAME_OFF = 0xffffffffffffffff
+		String FOLDER_NAME = ""
+	Else
+		Math FNAME_OFF + NAMES
+		Goto FNAME_OFF
+		Get FOLDER_NAME String
+	Endif
+
+	If PARENT_FOLDER = 0
+		PutArray 0 A FOLDER_NAME
+	Else
+		GetArray TEMPFOLDER 0 PARENT_FOLDER
+		String TEMPSTRING P "%TEMPFOLDER%\%FOLDER_NAME%"
+		PutArray 0 A TEMPSTRING
+	Endif
+
+	Math TEMP1 + 0x30
+Next A
+
+
+# Process files
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get FNAME_OFF LongLong
+	Math FNAME_OFF + NAMES
+	Get OFFSET LongLong
+	Get SIZE LongLong
+	GetDString JUNK 0x18
+	Get FOLDER_ID LongLong
+	Goto FNAME_OFF
+	Get FILENAME String
+	GetArray FOLDER_NAME 0 FOLDER_ID
+	String FILENAME P "%FOLDER_NAME%\%FILENAME%"
+
+	If FILENAME & ".tex"
+		String FILENAME R ".tex" ".dds"
+	Endif
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x3c
+Next A
+
+
