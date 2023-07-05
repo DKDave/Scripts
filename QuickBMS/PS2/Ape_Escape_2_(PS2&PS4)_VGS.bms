@@ -1,0 +1,41 @@
+# ================================================================================
+# Ape Escape 2 (PS2/PS4)
+# VGS audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: PS2 and PS4 files are identical
+
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x2f 0 Byte
+PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+For A = 0
+	GetDString FILENAME 0x10
+
+	If FILENAME = ""
+		Break
+	Endif
+
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get JUNK Long
+	Get SIZE Long
+	Get RATE Long
+
+	Goto 0x20 -1
+	PutDString FILENAME 0x10 -1
+	String FILENAME + ".vag"
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 RATE Long
+	Endian Little
+
+	Log FILENAME 0 0x30 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+Next A
+
