@@ -1,0 +1,47 @@
+# ================================================================================
+# Ape Escape 2 (PS2/PS4)
+# GZS extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype gzip
+
+IDString "gzs"
+
+Goto 0x10
+Get FILES Long
+
+Goto 0x20
+
+For A = 0 < FILES
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get ZSIZE Long
+	Math ZSIZE * 0x800
+	Get SIZE Long
+	Get JUNK Long
+
+	CLog MEMORY_FILE OFFSET ZSIZE SIZE
+
+# Extract files from IDP archive
+
+	IDString -1 "IDP"
+
+	Goto 8 -1
+	Get FILES2 Long -1
+	Goto 0x10 -1
+
+	For B = 0 < FILES2
+		GetDString FILENAME2 0x10 -1
+		Get OFFSET2 Long -1
+		GetDString EXT 4 -1
+		Get SIZE2 Long -1
+		Get JUNK Long -1
+		String FILENAME2 P "%FILENAME2%.%EXT%"
+		Log FILENAME2 OFFSET2 SIZE2 -1
+	Next B
+
+Next A
+
