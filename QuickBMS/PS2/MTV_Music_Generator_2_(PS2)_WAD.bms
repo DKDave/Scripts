@@ -39,10 +39,12 @@ For A = 0 < COUNT1
 			GetArray TEMP2 1 PARENT_ID					# parent idx for this folder
 
 			String FNAME P "%TEMPNAME%\%FNAME%"
+			String FNAME _ FNAME
 			Math PARENT_ID = TEMP2
 		Next B
 
 		String FILENAME P "%FNAME%%NAME%"
+		String FILENAME _ FILENAME
 
 		XMath ENTRY2 "TABLE2 + (ID * 8) - 8"					# 1-based file index values
 		Goto ENTRY2
