@@ -1,0 +1,37 @@
+# ================================================================================
+# Tony Hawk's Pro Skater (PS1)
+# HED/WAD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the HED file
+
+
+Open FDDE "WAD" 1
+
+Get FILE_END asize
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get TEMP Byte
+
+	If TEMP = 0xFF
+		Break
+	Endif
+
+	Goto ENTRY
+	Get FILENAME String
+	Padding 4
+	Get OFFSET Long
+	Get SIZE Long
+
+	SavePos ENTRY
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
+
+
+
+
