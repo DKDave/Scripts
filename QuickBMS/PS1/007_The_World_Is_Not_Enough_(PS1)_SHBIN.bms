@@ -1,0 +1,33 @@
+# ================================================================================
+# 007: The World Is Not Enough (PS1)
+# SHBIN.BIN extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+
+Math ENTRY = 0
+Get FILE_END asize
+
+For A = 0
+	Goto ENTRY
+	GetDString FILENAME 0x1a
+	Get OFFSET Short
+	Math OFFSET * 0x800
+
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	GetDString JUNK 0x1a
+	Get OFFSET2 Short
+	Math OFFSET2 * 0x800
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x1c
+Next A
+
+
+
+
