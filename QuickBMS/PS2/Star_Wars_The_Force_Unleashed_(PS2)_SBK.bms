@@ -1,0 +1,40 @@
+# ================================================================================
+# Star Wars: The Force Unleashed (PS2)
+# SBK audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# This script extracts the audio from SBK archives and outputs playable .vag files
+
+
+IDString "SB01"
+
+Get FILES Long
+Goto 0x10
+
+For A = 0 < FILES
+	GetDString FILENAME 0x20
+	String FILENAME + ".vag"
+	Get OFFSET Long
+	Get SIZE Long
+	Get RATE Short
+	Get MISC1 Short
+	Goto 0x14 0 SEEK_CUR
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x2f 0 Byte
+	PutVarChr MEMORY_FILE 0 0x70474156 Long
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 RATE Long
+	Endian Little
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+Next A
+
