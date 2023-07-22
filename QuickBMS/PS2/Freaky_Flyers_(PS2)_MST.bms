@@ -1,0 +1,23 @@
+# ================================================================================
+# Freaky Flyers (PS2)
+# MST extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+
+IDString "FANG"
+
+Goto 0x0c
+Get ENTRIES Long
+
+Goto 0x6c
+
+For A = 0 < ENTRIES
+	GetDString FILENAME 0x18
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Get MISC2 Long
+	Log FILENAME OFFSET SIZE
+Next A
+
