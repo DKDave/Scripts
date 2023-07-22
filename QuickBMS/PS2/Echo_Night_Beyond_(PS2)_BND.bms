@@ -1,0 +1,29 @@
+# ================================================================================
+# Echo Night: Beyond (PS2)
+# BND extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: the files in the "savedata" folders have non-ASCII characters in the names
+
+
+IDString "BND\x00"
+
+Goto 0x10
+Get FILES Long
+Math ENTRY = 0x20
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get JUNK Long
+	Get OFFSET Long
+	Get SIZE Long
+	Get FNAME_OFFSET Long
+	Goto FNAME_OFFSET
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x10
+Next A
+
