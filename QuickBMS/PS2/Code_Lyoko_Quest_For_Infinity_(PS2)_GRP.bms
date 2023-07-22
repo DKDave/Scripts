@@ -1,10 +1,10 @@
 # ================================================================================
 # Code Lyoko: Quest For Infinity (PS2)
-# MUSIC.GRP extract
-# QuickBMS script by DKDave, 2023
+# MUSIC.GRP audio extract
+# QuickBMS script by DKDave, 2023 (v2)
 # ================================================================================
 
-# Files are output as .ss2 files which will play in Foobar/vgmstream
+# Files are extracted as .ss2 files playable in Foobar/vgmstream
 
 
 Get TEMPNAME basename
@@ -23,33 +23,32 @@ PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
 PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
 PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
 
-Math ENTRY1 = 4
-XMath ENTRY2 "ENTRY1 + (FILES * 8)"
+Math TABLE1 = 0x04
+XMath TABLE2 "TABLE1 + (FILES * 8)"
 
 For A = 0 < FILES
-	Goto ENTRY1
+	Goto TABLE1
 	Get JUNK Long
-	Get INFO_OFF Long
-	Goto ENTRY2
+	Get AUDIO_INFO_OFFSET Long
+	Goto TABLE2
 	Get SIZE Long
 	Get OFFSET Long
-	Goto INFO_OFF
+	Goto AUDIO_INFO_OFFSET
 	Get JUNK Long
 	Get JUNK Long
 	Get CHANNELS Long
 	Get SAMP_RATE Long
 	Get INTERLEAVE Long
 
-	PutVarChr MEMORY_FILE 0xc SAMP_RATE Long
+	PutVarChr MEMORY_FILE 0x0c SAMP_RATE Long
 	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
-
-	If CHANNELS = 2
-		PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
-	Else
-		PutVarChr MEMORY_FILE 0x14 0 Long
-	Endif
-
 	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	If CHANNELS = 1
+		PutVarChr MEMORY_FILE 0x14 0 Long
+	Else
+		PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+	Endif
 
 	String FILENAME P "%TEMPNAME%_%A%.ss2"
 
@@ -58,7 +57,7 @@ For A = 0 < FILES
 	Log FILENAME OFFSET SIZE
 	Append
 
-	Math ENTRY1 + 8
-	Math ENTRY2 + 8
+	Math TABLE1 + 8
+	Math TABLE2 + 8
 Next A
 
