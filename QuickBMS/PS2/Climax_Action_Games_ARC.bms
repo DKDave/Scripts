@@ -1,0 +1,40 @@
+# ================================================================================
+# Climax Action games
+# ARC extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Works on the following Climax Action games that I've tested:
+
+# Silent Hill: Shattered Memories (PS2)
+# Ghost Rider (PS2)
+
+
+IDString "A2.0"
+
+ComType zlib
+
+Get FILES Long
+Get DATA_START Long
+Get FILENAMES Long
+
+Math ENTRY = 0x14
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get FNAME_OFFSET Long
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Math FNAME_OFFSET + FILENAMES
+	Goto FNAME_OFFSET
+	Get FILENAME String
+
+	If SIZE = 0
+		Log FILENAME OFFSET ZSIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math ENTRY + 0x10
+Next A
