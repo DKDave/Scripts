@@ -1,0 +1,32 @@
+# ================================================================================
+# Star Wars: The Force Unleashed (Ultimate Sith Edition) (PS3)
+# PS3D / PS3P audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+
+Open FDDE "PS3P" 1
+
+Goto 8
+Get FILES Long
+Math ENTRY = 0x10
+XMath NAMES "(FILES * 0x1c) + 0x10"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Get MISC2 Long
+	Get SIZE Long
+	Goto NAMES
+	Get LEN Long
+	GetDString FILENAME LEN
+	String FILENAME + ".mp3"
+	SavePos NAMES
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x1c
+Next A

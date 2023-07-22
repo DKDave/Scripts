@@ -1,0 +1,33 @@
+# ================================================================================
+# Star Wars: The Force Unleashed (Ultimate Sith Edition) (PS3)
+# WAD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Note: All 5 "GAMEDATA.WAD*" files must be joined together before using this script on the combined archive
+# Note: Use QuickBMS_4gb_files with this script
+
+
+Endian Big
+
+IDString "LWAD"
+
+Get MISC1 Long
+Get FILES Long
+Math ENTRY = 0x10
+XMath NAMES "(FILES * 0x18) + 0x10"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get JUNK Long
+	Get SIZE Long
+	Get OFFSET LongLong
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x18
+Next A
