@@ -1,0 +1,52 @@
+# ================================================================================
+# Radical Entertainment RCF extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Tested on the following games so far:
+
+# Tetris Worlds (XBox)
+# Dark Summit (PS2)
+
+
+IDString "RADCORE CEMENT LIBRARY"
+
+Goto 0x24
+Get ENTRY Long
+Goto ENTRY
+Get FILES Long
+Get NAMES Long
+
+Goto 8 0 SEEK_CUR
+SavePos ENTRY
+
+Goto NAMES
+Goto 8 0 SEEK_CUR
+SavePos NAMES
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	PutArray 0 A OFFSET
+	PutArray 1 A SIZE
+
+	Math ENTRY + 0x0c
+Next A
+
+
+SortArray 0 1
+
+For A = 0 < FILES
+	GetArray OFFSET 0 A
+	GetArray SIZE 1 A
+	Goto NAMES
+	Get LEN Long
+	GetDString FILENAME LEN
+	Get MISC1 Long
+	SavePos NAMES
+
+	Log FILENAME OFFSET SIZE
+Next A
