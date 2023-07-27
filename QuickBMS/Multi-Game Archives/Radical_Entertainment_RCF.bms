@@ -1,28 +1,53 @@
 # ================================================================================
 # Radical Entertainment RCF extract
-# QuickBMS script by DKDave, 2023
+# QuickBMS script by DKDave, 2023 (v2 - updated to include "ATG CORE" archives)
 # ================================================================================
 
 # Tested on the following games so far:
 
+# "RADCORE":
+
 # Tetris Worlds (XBox)
 # Dark Summit (PS2)
 
+# "ATG CORE":
 
-IDString "RADCORE CEMENT LIBRARY"
+# Crash: Mind Over Mutant (PS2)
+# Crash Of The Titans (PS2)
+# Scarface: The World Is Yours (PS2)
 
-Goto 0x24
-Get ENTRY Long
-Goto ENTRY
-Get FILES Long
-Get NAMES Long
 
-Goto 8 0 SEEK_CUR
-SavePos ENTRY
+Get ID String
 
-Goto NAMES
-Goto 8 0 SEEK_CUR
-SavePos NAMES
+If ID = "RADCORE CEMENT LIBRARY"
+	Goto 0x24
+	Get ENTRY Long
+	Goto ENTRY
+	Get FILES Long
+	Get NAMES Long
+	Goto 8 0 SEEK_CUR
+	SavePos ENTRY
+	Goto NAMES
+	Goto 8 0 SEEK_CUR
+	SavePos NAMES
+
+Elif ID = "ATG CORE CEMENT LIBRARY"
+	Goto 0x24
+	Get ENTRY Long
+	Get DIR_SIZE Long
+	Get NAMES Long
+	Get NAMES_SIZE Long
+	Get JUNK Long
+	Get FILES Long
+	Goto NAMES
+	Goto 8 0 SEEK_CUR
+	SavePos NAMES
+
+Else
+	Print "Not a valid Radical Entertainment archive."
+	Exit
+Endif
+
 
 For A = 0 < FILES
 	Goto ENTRY
@@ -43,10 +68,19 @@ For A = 0 < FILES
 	GetArray OFFSET 0 A
 	GetArray SIZE 1 A
 	Goto NAMES
-	Get LEN Long
-	GetDString FILENAME LEN
-	Get MISC1 Long
-	SavePos NAMES
+
+	If ID = "RADCORE CEMENT LIBRARY"
+		Get LEN Long
+		GetDString FILENAME LEN
+		Get MISC1 Long
+		SavePos NAMES
+	Else
+		Goto 12 0 SEEK_CUR
+		Get LEN Long
+		GetDString FILENAME LEN
+		Get JUNK Threebyte
+		SavePos NAMES
+	Endif
 
 	Log FILENAME OFFSET SIZE
 Next A
