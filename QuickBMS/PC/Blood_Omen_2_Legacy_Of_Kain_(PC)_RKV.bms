@@ -1,0 +1,24 @@
+# ================================================================================
+# Blood Omen 2: Legacy Of Kain (PC, 2002)
+# PC.RKV extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Goto 0x27
+Get FILES Long
+
+For A = 0 < FILES
+	Get MISC1 Long
+	Get LEN Long
+	GetDString FILENAME LEN
+	String FILENAME + ".ogg"
+	Get MISC2 Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+	Math OFFSET + 0x1a000
+
+	Log FILENAME OFFSET SIZE
+Next A
+
