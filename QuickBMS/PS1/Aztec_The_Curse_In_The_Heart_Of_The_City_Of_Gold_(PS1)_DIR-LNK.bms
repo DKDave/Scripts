@@ -1,0 +1,54 @@
+# ================================================================================
+# Aztec: The Curse In The Heart Of The City Of Gold (PS1)
+# DIR / LNK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "LNK" 1
+
+Goto 0x14
+Get DIRS Long
+XMath DIRS "(DIRS - 0x14) / 0x18"
+
+Goto 0x10
+Get ENTRY Long
+Get DIR_OFF Long
+String DIR_NAME = ""
+
+CallFunction DO_DIR 1 DIR_OFF					# process root folder
+
+
+For A = 0 < DIRS
+	Goto ENTRY
+	GetDString DIR_NAME 0x14
+	Get DIR_OFF Long
+
+	CallFunction DO_DIR 1 DIR_OFF
+
+	Math ENTRY + 0x18
+Next A
+
+
+StartFunction DO_DIR
+	Goto DIR_OFF
+	Get FILES Long
+	SavePos ENTRY2
+
+	For B = 0 < FILES
+		Goto ENTRY2
+		Get OFFSET Long
+		GetDString FILENAME 0x10
+		Get OFFSET2 Long
+		XMath SIZE "OFFSET2 - OFFSET"
+
+		String FILENAME P "%DIR_NAME%\%FILENAME%"
+
+		Log FILENAME OFFSET SIZE 1
+
+		Math ENTRY2 + 0x14
+	Next B
+
+EndFunction
+
+
