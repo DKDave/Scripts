@@ -1,0 +1,55 @@
+# ================================================================================
+# Dune 2000 (PS1)
+# FAT / MIX /XA extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Open FDDE "mix" 1
+Open FDDE "xa" 2
+
+Get COUNT1 Long							# files in DATA.MIX archive
+Get COUNT2 Long							# files in DATA.XA archive
+
+Math ENTRY = 8
+
+For A = 0 < COUNT1
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+	Get MISC1 Long
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x1c
+Next A
+
+
+Get XA_END asize 2
+
+For A = 1 To COUNT2
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	Math OFFSET * 0x930
+	Get SIZE Long						# not accurate
+	Get MISC1 Long
+
+	If A < COUNT2
+		Goto 0x10 0 SEEK_CUR
+		Get OFFSET2 Long
+		XMath SIZE2 "(OFFSET2 * 0x930) - OFFSET"
+	Else
+		XMath SIZE2 "XA_END - OFFSET"
+	Endif
+
+	Log FILENAME OFFSET SIZE2 2
+
+	Math ENTRY + 0x1c
+Next A
+
+
+
+
