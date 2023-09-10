@@ -1,0 +1,35 @@
+# ================================================================================
+# Ring Of Elysium (PC)
+# SFC extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+ComType LZ4
+
+Get TEMPNAME basename
+
+Goto 0x8
+Get FILES Long
+Math ENTRY = 0x0c
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString JUNK 8
+	Get OFFSET Long
+	Goto OFFSET
+	Get ZSIZE Long
+	SavePos OFFSET
+	Goto ZSIZE 0 SEEK_CUR
+	Get SIZE Long
+
+	String FILENAME P "%TEMPNAME%_%A%.wem"
+	CLog FILENAME OFFSET ZSIZE SIZE
+
+	Math ENTRY + 12
+Next A
+
+
+
+
+
