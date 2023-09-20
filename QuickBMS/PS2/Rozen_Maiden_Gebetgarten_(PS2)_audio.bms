@@ -1,0 +1,61 @@
+# ================================================================================
+# Rozen Maiden: Gebetgarten (PS2)
+# Audio extract - music and dialogue
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the TSNDDRVM.IRX file - make sure your .iso is in the same folder
+# Note: There are many duplicates, so skip existing files when extracting
+# Note: Some of the audio files are silent
+# Extracted .ss2 files can be played with Foobar/vgmstream
+
+
+Open FDSE "rozen.iso" 1								# Change iso name here as required
+
+Math ENTRY = 0x10874
+Math ENTRY2 = 0xa500
+
+For A = 0 < 0x17e3
+	Goto ENTRY
+	Get IDX Long
+	Get TYPE Long
+	Get MISC2 Short
+	Get RATE Short
+	XMath RATE "(RATE * 48000) / 4096"
+	Get JUNK Byte
+	Get CHANNELS Byte
+	Get JUNK Short
+	Get INTERLEAVE Long
+	XMath IDX_OFF "ENTRY2 + (IDX * 8)"
+	Goto IDX_OFF
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x27 0 Byte
+	PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+	PutVarChr MEMORY_FILE 0x04 0x18 Long
+	PutVarChr MEMORY_FILE 0x08 2 Long						# PS ADPCM
+	PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+	PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+	PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME P "AUDIO_%IDX%.ss2"
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE 1
+	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x18
+Next A
+
+
