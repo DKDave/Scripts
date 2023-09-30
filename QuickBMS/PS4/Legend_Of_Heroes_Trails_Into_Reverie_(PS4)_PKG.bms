@@ -1,0 +1,34 @@
+# ================================================================================
+# Legend Of Heroes: Trails Into Reverie (PS4)
+# PKG extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype NISLZS
+
+Goto 4
+Get FILES Long
+
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x40
+	Get SIZE Long
+	Get ZSIZE Long
+	Get OFFSET Long
+	Get FLAG Long
+
+	If FLAG = 0
+		Log FILENAME OFFSET ZSIZE
+	Else
+		Math OFFSET + 8
+		Math ZSIZE - 8
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math ENTRY + 0x50
+Next A
+
+
