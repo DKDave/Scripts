@@ -1,0 +1,52 @@
+# ================================================================================
+# Nuclear Strike (PS1)
+# Extract audio from *.AFx files
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+IDString "FAPG"
+
+Get TEMPNAME basename
+Get TEMPEXT extension
+
+Goto 0x0e
+Get HEADER_SIZE Short
+XMath DATA_START "HEADER_SIZE + 0xc"
+
+Goto 0x12
+Get FILES Short
+Math ENTRY = 0x14
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Short
+	Get RATE Short
+	XMath RATE "(RATE * 48000) / 4096"
+	Get OFFSET Short
+	Math OFFSET + DATA_START
+	Goto 4 0 SEEK_CUR
+	Get OFFSET2 Short
+	Math OFFSET2 + DATA_START
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x2f 0 Byte
+
+	Endian Big
+	PutVarChr MEMORY_FILE 0 0x56414770 Long
+	PutVarChr MEMORY_FILE 0x0c SIZE Long
+	PutVarChr MEMORY_FILE 0x10 RATE Long
+	Endian Little
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	Get MEM_SIZE asize -1
+	String FILENAME P "%TEMPNAME%_%TEMPEXT%_%A%.vag"
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 6
+Next A
+
