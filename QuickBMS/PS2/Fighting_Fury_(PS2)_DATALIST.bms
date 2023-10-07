@@ -1,0 +1,28 @@
+# ================================================================================
+# Fighting Fury (PS2)
+# DATALIST DAT/BIN extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the DATALIST.DAT file
+
+
+IDString "baki"
+
+Open FDDE "bin" 1
+
+Get TEMPNAME basename
+Get FILES Long
+
+For A = 0 < FILES
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+	Math SIZE * 0x800
+
+	String FILENAME P "%TEMPNAME%_%A%"
+
+	Log FILENAME OFFSET SIZE 1
+Next A
+
+
