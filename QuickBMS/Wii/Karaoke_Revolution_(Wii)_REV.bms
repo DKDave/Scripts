@@ -1,0 +1,40 @@
+# ================================================================================
+# Karaoke Revolution (Wii)
+# REV audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Endian Big
+
+Goto 4
+Get BLOCK_SIZE Long
+
+Goto 0x0c
+Get FILES Long
+Get ENTRY Long
+Math ENTRY * BLOCK_SIZE
+
+Goto 0x28
+Get NAMES Long
+Math NAMES * BLOCK_SIZE
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * BLOCK_SIZE
+	Get HASH Long
+	Get SIZE Long
+	Get NAME_OFF Long
+	Get MISC1 Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If FILENAME & ".wav"						# output .wav / .wav.str files only
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math ENTRY + 0x14
+Next A
+
