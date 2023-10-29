@@ -6,5 +6,7 @@ I have previously uploaded many of these to websites such as Xentax, Zenhax, and
 
 Many more scripts will be added once checked for accuracy.
 
+NOTE: These scripts are all my own work based on my own reverse engineering.  You may not distribute these tools for profit in any way, and all credit to me must be given if redistributed/re-used in your own projects.
+
 
 Dave
