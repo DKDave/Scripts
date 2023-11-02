@@ -1,0 +1,136 @@
+# ================================================================================
+# Alan Wake 2 (2023)
+# RMDTOC/RMDBLOB extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+QuickBMSVer -64
+
+ComType LZ4
+
+Goto 8
+Get ENTRY Long
+Get ENTRY_SIZE Long
+XMath ENTRIES "ENTRY_SIZE / 0x10"
+
+Goto 0x14
+Get BLOB_COUNT Long
+Get TABLE1 Long									# folder info
+Get TABLE1_COUNT Long
+Get TABLE2 Long
+Get TABLE2_COUNT Long								# file table 1
+Get NAMES Long
+Get NAMES_SIZE Long
+Get TABLE3 Long									# metadata info
+Get TABLE3_COUNT Long
+Get TABLE4 Long									# file table 2
+Get TABLE4_SIZE Long
+
+Goto 0x50
+Get TABLE5 Long									# file parts
+Get TABLE5_SIZE Long
+
+For A = 0 < ENTRIES
+	Goto ENTRY
+	Get MISC1 Threebyte
+	Get OFFSET Long
+	Get JUNK Byte
+	Get SIZE Long
+	Get ZSIZE Long
+
+	Append
+	CLog MEMORY_FILE OFFSET ZSIZE SIZE
+	Append
+
+	Math ENTRY + 0x10
+Next A
+
+
+# Open all relevant BLOB files
+
+Math ENTRY = 0
+
+For A = 1 To BLOB_COUNT
+	Goto ENTRY -1
+	Get NAME_OFF Long -1
+	Get LEN Long -1
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF -1
+	GetDString BLOB_NAME LEN -1
+
+	Open FDSE BLOB_NAME A EXISTS
+
+	If EXISTS = 0
+		Print "%BLOB_NAME% doesn't exist"
+	Endif
+
+	Math ENTRY + 0x10
+Next A
+
+
+# Process each folder
+
+For A = 0 < TABLE1_COUNT
+	Goto TABLE1 -1
+	Goto 12 -1 SEEK_CUR
+	Get FLDR_IDX Long -1
+	Get FILES Long -1
+	Get FLDR_NAME_OFF Long -1
+	Get LEN Long -1
+	Math FLDR_NAME_OFF + NAMES
+	Goto FLDR_NAME_OFF -1
+	GetDString FLDR_NAME LEN -1
+	XMath INFO1 "TABLE2 + (FLDR_IDX * 0x20)"
+
+	For B = 0 < FILES
+		Goto INFO1 -1
+		Get INFO5 Long -1
+		Get INFO5_2 Long -1							# Size of parts info entries
+		XMath FILES2 "INFO5_2 / 0x10"
+		Get INFO5_3 Long -1
+		Get FILENAME_OFF Long -1
+		Get LEN Long -1
+		Get SIZE Long -1								# Total size of file
+		Get INFO4 Long -1
+		Get INFO4_SIZE Long -1
+		Math FILENAME_OFF + NAMES
+		Math INFO5 + TABLE5
+		Goto FILENAME_OFF -1
+		GetDString FILENAME LEN -1
+		Goto INFO5 -1
+
+		String FILENAME P "%FLDR_NAME%\%FILENAME%"
+
+# Do each file part
+
+		For C = 0 < FILES2
+			Get JUNK Byte -1
+			Get TOC_NUM Byte -1
+			Get JUNK Byte -1
+			Get OFFSET Long -1
+			Get OFFSET2 Byte -1
+			XMath OFFSET "(OFFSET2 * 0x100000000) + OFFSET"
+			Get SIZE2 Long -1
+			Get ZSIZE Long -1
+			Math TOC_NUM + 1
+
+			Append
+
+			If ZSIZE = 0
+				Log FILENAME OFFSET SIZE2 TOC_NUM
+			Else
+				CLog FILENAME OFFSET ZSIZE SIZE2 TOC_NUM
+			Endif
+
+			Append
+
+		Next C
+
+		Math INFO1 + 0x20
+	Next B
+
+	Math TABLE1 + 0x1c
+
+Next A
+
