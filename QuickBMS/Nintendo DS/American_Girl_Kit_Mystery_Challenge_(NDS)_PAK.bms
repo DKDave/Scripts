@@ -1,0 +1,62 @@
+# ================================================================================
+# American Girl: Kit Mystery Challenge (2008, NDS)
+# .PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Comtype jcalg
+
+Get FILES Long
+
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get HASH Long
+	Get ENTRY2 Long
+	Get TOTAL_SIZE Long
+	Get PARTS Long
+
+	XMath OFFSET "ENTRY2 + (PARTS * 4)"							# start of compressed data blocks for this file
+
+	Log MEMORY_FILE 0 0
+
+	For B = 0 < PARTS
+		Goto ENTRY2
+		Get PART_END Long
+		Goto OFFSET
+		Get COMP Long								# 0 = uncompressed block, 1 = compressed block
+		Get SIZE Long
+		SavePos OFFSET
+		XMath ZSIZE "PART_END - OFFSET"
+
+		If COMP = 0
+			Append
+			Log MEMORY_FILE OFFSET SIZE
+			Append
+		Else
+			Set MEMORY_FILE2 binary "JC\x00\x00\x00\x00\x00\x00\x00\x00"		# fake block header for QuickBMS
+			Append
+			Log MEMORY_FILE2 OFFSET ZSIZE
+			Append
+			XMath ZSIZE2 "ZSIZE + 10"
+
+			Append
+			CLog MEMORY_FILE 0 ZSIZE2 SIZE -2
+			Append
+		Endif
+
+		Math OFFSET + ZSIZE
+		Math ENTRY2 + 4
+	Next B
+
+	Get MEM_SIZE asize -1								# Should be same as TOTAL_SIZE
+
+	String FILENAME P "FILESYSTEM_%A%"
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x10
+Next A
+
+
