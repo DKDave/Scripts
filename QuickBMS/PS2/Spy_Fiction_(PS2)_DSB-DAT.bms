@@ -1,0 +1,55 @@
+# ================================================================================
+# Spy Fiction (PS2)
+# DSB / DAT archive extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the ALLDATA.DSB file
+# NOTE: Not sure if this extracts everything as the extracted data is 1.91 GB compared to the 2.91 GB DAT archive
+
+
+Open FDSE "ALLDATA.DAT" 1
+
+IDString "DSB."
+
+Get FCOUNT Long
+
+Math F_ENTRY = 0x10
+
+For A = 0 < FCOUNT
+	Goto F_ENTRY
+	Get F_START Long
+	GetDString F_NAME 0x0c
+	Goto F_START
+
+	For B = 0
+		Get ENTRY_TYPE Byte
+
+		If ENTRY_TYPE = 0x0d								# End of data for this folder
+			Break
+		Endif
+
+		If ENTRY_TYPE = 0x15
+			For C = 0 < 0x10							# 0x10 file entries per block
+				Get LEN Short
+				GetDString FILENAME LEN
+				String FILENAME P "%F_NAME%\%FILENAME%"
+				Get LEN2 Short
+				Get OFFSET Long						# Start block in DAT archive
+				Math OFFSET * 0x800
+				Get BLOCKS Long						# Size of file in blocks
+				Get SIZE Long						# Actual data size
+
+				If SIZE <> 0
+					Log FILENAME OFFSET SIZE 1
+				Endif
+			Next C
+
+			GetDString JUNK 0x10
+		Endif
+
+	Next B
+
+	Math F_ENTRY + 0x10
+Next A
+
