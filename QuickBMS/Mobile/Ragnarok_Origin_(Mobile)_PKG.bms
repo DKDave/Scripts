@@ -1,0 +1,28 @@
+# ================================================================================
+# Ragnarok Origin
+# PKG extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+
+Get TABLE Long
+Math TABLE + 0xa
+Goto TABLE
+Get FILES Long
+
+For A = 0 < FILES
+	Get TEXT_LEN Long
+	GetDString FILENAME TEXT_LEN
+	GetDString JUNK 0x14
+	Get OFFSET Long
+	Get JUNK Long
+	Get SIZE Long
+	Get JUNK Long
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+
+
+

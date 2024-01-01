@@ -1,0 +1,75 @@
+# ================================================================================
+# Asphalt 5 (iOS)
+# package_general.bar extract
+# QuicKBMS script by DKDave, 2021
+# ================================================================================
+
+
+Get TEMPNAME basename
+Get SECTIONS Long
+XMath DATA_START "(SECTIONS * 4) + 2"
+Math ENTRY = 2
+
+For A = 0 < SECTIONS
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+
+	String EXT = ""
+
+# add some extensions, most unknown
+
+	If A = 1
+		String EXT = ".wav"
+	Elif A = 13
+		String EXT = ".icab"
+	Endif
+
+
+	If A = 1 Or A = 7 Or A = 15
+		Goto OFFSET
+		Get COUNT Short
+		SavePos ENTRY2
+		XMath DATA2 "OFFSET + (COUNT * 4) + 2"
+		Math COUNT - 1
+
+		For B = 0 < COUNT
+			Goto ENTRY2
+			Get OFFSET2 Long
+			Get SIZE Long
+			Math SIZE - OFFSET2
+			Math OFFSET2 + DATA2
+
+			String FILENAME P "%TEMPNAME%_%A%_%B%%EXT%"
+			Log FILENAME OFFSET2 SIZE
+
+			Math ENTRY2 + 4
+		Next B
+
+	Else If A <> 0
+		Goto OFFSET
+		Get COUNT Short
+		SavePos ENTRY2
+		XMath DATA2 "OFFSET + (COUNT * 6) + 2"
+		Math COUNT - 1
+
+		For B = 0 < COUNT
+			Goto ENTRY2
+			Get OFFSET2 Long
+			Get JUNK Short
+			Get SIZE Long
+			Math SIZE - OFFSET2
+			Math OFFSET2 + DATA2
+
+			String FILENAME P "%TEMPNAME%_%A%_%B%%EXT%"
+
+			Log FILENAME OFFSET2 SIZE
+
+			Math ENTRY2 + 6
+		Next B
+
+	Endif
+
+	Math ENTRY + 4
+Next A
+

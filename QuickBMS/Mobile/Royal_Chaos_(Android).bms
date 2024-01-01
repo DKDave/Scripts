@@ -1,0 +1,36 @@
+# Royal Chaos (Android)
+# main.obb extract
+# QuickBMS script by DKDave, 2022
+
+
+Comtype gzip
+
+Get ZSIZE Long
+Goto ZSIZE
+Get SIZE Long
+Math ZSIZE - 4
+
+CLog MEMORY_FILE 4 ZSIZE SIZE
+
+Math OFFSET = 0
+Math DATA_OFFSET = ZSIZE
+Math DATA_OFFSET + 8
+
+For A = 0
+	If OFFSET = SIZE
+		Break
+	Endif
+
+	Goto OFFSET -1
+	GetCT TEXT1 String 0x7c -1
+
+	String MISC v TEXT1 "," FILENAME SIZE2
+	Math SIZE2 = SIZE2
+
+	Log FILENAME DATA_OFFSET SIZE2
+
+	SavePos OFFSET -1
+	Math DATA_OFFSET + SIZE2
+
+Next A
+

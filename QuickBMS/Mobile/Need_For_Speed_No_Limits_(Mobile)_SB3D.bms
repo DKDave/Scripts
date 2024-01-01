@@ -1,0 +1,47 @@
+# ================================================================================
+# Need For Speed: No Limits (Mobile)
+# .sb3d extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+# This script will extract and decompress all of the data parts
+# Further analysis will be required to combine the files correctly for the models
+
+
+ComType ZSTD
+
+Get TEMPNAME basename
+
+FindLoc BULK_OFFSET String "BULK" 0 ""
+FindLoc BARG_OFFSET String "BARG" 0 ""
+
+Goto BULK_OFFSET
+Get JUNK Long
+Get BULK_SIZE Long
+Get JUNK Long
+SavePos TEMP1
+XMath DATA_START "BARG_OFFSET + 12"
+XMath ENTRIES "BULK_SIZE / 8"
+
+
+For A = 0 < ENTRIES
+	Goto TEMP1
+	Get OFFSET Long
+	Get ZSIZE Long
+	Math OFFSET + DATA_START
+
+	Goto OFFSET
+	Get TYPE Long					# 0 = not compressed, 2 = compressed
+	Get SIZE Long
+
+	If TYPE = 2
+		Math OFFSET + 16
+		Math ZSIZE - 16
+		String FILENAME P "%TEMPNAME%_%A%"
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math TEMP1 + 8
+Next A
+
+

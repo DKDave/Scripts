@@ -1,0 +1,40 @@
+# ================================================================================
+# Family Hero (Android)
+# Extract extensionless archives
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+Comtype deflate
+
+Goto 0x0c
+Get TABLE Long
+
+Goto TABLE
+Get FILES Long
+
+For A = 0 < FILES
+	Get LEN Byte
+	SavePos TEMP1
+	Get BYTE2 Byte
+
+	If BYTE2 = 1
+		GetDString FILENAME LEN
+	Else
+		Goto TEMP1
+		GetDString FILENAME LEN
+	Endif
+
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get MISC Long
+	Get SIZE Long
+	GetDString JUNK 0x44
+
+	If ZSIZE <> SIZE
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Else
+		Log FILENAME OFFSET ZSIZE
+	Endif
+
+Next A
+

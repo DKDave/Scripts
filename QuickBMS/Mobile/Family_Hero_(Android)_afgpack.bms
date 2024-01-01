@@ -1,0 +1,68 @@
+# ================================================================================
+# Family Hero (Android)
+# .afgpack extract
+# QuickBMS script by DKDave, 2022
+# ================================================================================
+
+# Note: the extracted files don't have extensions
+
+
+IDString "RDFZ"
+
+# Decompress filenames
+
+Goto 0x0c
+Get ZSIZE Long
+Get SIZE Long
+Math ZSIZE - 4
+
+CLog MEMORY_FILE 0x14 ZSIZE SIZE
+
+
+# Create folder/filename arrays
+
+Goto 0x10 -1
+
+For A = 0 To 1
+	Get ENTRIES Long -1
+
+	For B = 0 < ENTRIES
+		Get LEN Long -1
+		GetDString TEXT LEN -1
+		PutArray A B TEXT
+	Next B
+
+Next A
+
+
+XMath ENTRY "ZSIZE + 0x14"
+
+Goto ENTRY
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get FOLDER_IDX Long						# folder name
+	Get FILE_IDX Long							# filename
+	Get FLAG Long							# 1 = compressed, 0 = uncompressed
+
+	GetArray FOLDER_NAME 0 FOLDER_IDX
+	GetArray FILENAME 1 FILE_IDX
+	String FILENAME P "%FOLDER_NAME%\%FILENAME%"
+
+	If FLAG = 0
+		Log FILENAME OFFSET ZSIZE
+	Else
+		Goto OFFSET
+		Get SIZE Long
+		SavePos OFFSET
+		Math ZSIZE - 4
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+	Math ENTRY + 0x14
+Next A
+
