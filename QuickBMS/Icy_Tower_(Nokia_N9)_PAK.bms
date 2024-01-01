@@ -1,0 +1,64 @@
+# ================================================================================
+# Icy Tower (GameLion) (Nokia N9)
+# PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Should work with other N9 GameLion games
+
+
+ComType lzma_dynamic
+
+Get DATA_START Long
+Math OFFSET = DATA_START
+XMath ZSIZE "OFFSET - 0x0c"
+Get BLOCK_SIZE Long
+Get SIZE Long
+
+CLog MEMORY_FILE 0x0c ZSIZE SIZE
+
+XMath FILES "SIZE / 4"
+
+For A = 0 < FILES
+	Get BLOCK_END Long -1
+	XMath FLAG "(BLOCK_END & 0x80000000) >> 31"				# 0 = uncompressed, 1 = compressed
+	XMath BLOCK_END "(BLOCK_END & 0x7fffffff) + DATA_START"
+	XMath ZSIZE "BLOCK_END - OFFSET"
+
+	Append
+
+	If FLAG = 0
+		Log MEMORY_FILE2 OFFSET BLOCK_SIZE
+	Else
+		CLog MEMORY_FILE2 OFFSET ZSIZE BLOCK_SIZE
+	Endif
+
+	Append
+
+	Math OFFSET + ZSIZE
+Next A
+
+
+# Decompressed archive is now in MEMORY_FILE2
+
+Goto 0 -2
+Get FILES Long -2
+XMath NAMES "(FILES * 12) + 8"
+
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY -2
+	Get OFFSET Long -2
+	Get SIZE Long -2
+	Get LEN Long -2
+	Goto NAMES -2
+	Get FILENAME String -2
+	SavePos NAMES -2
+
+	Log FILENAME OFFSET SIZE -2
+
+	Math ENTRY + 12
+Next A
+
+
