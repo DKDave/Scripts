@@ -1,0 +1,53 @@
+# ================================================================================
+# The Legend Of Spyro: A New Beginning (GameCube)
+# GSB audio extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Files are extracted as playable DSP files
+
+
+Endian Big
+
+IDString "SB01"
+
+Get FILES Long
+Math ENTRY = 0x20
+XMath DATA_START "(FILES * 0x60) + 0x20"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get FILENAME String
+	String FILENAME + ".dsp"
+	Padding 0x20
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get SAMP_COUNT Long
+	Get DATA_SIZE Long
+	Get RATE Short
+	Get JUNK Long
+	SavePos COEFF_OFFSET
+	XMath NIB_COUNT "DATA_SIZE * 2"
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 RATE Long
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+
+	Append
+	Log MEMORY_FILE COEFF_OFFSET 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET DATA_SIZE
+	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x60
+Next A
+
