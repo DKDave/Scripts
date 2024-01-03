@@ -1,13 +1,13 @@
 # ================================================================================
 # Once Human (Beta)
-# NPK Extract
-# QuickBMS script by DKDave, 2023
+# NPK archive extract
+# QuickBMS script by DKDave, 2023 - updated 3 January 2024
 # ================================================================================
+
+# Should work for older NetEase games with the same archive format
 
 
 IDString "NXPK"
-
-ComType ZSTD
 
 Get FILES Long
 Goto 0x14
@@ -22,13 +22,28 @@ For A = 0 < FILES
 	Get SIZE Long
 	Get MISC2 Long
 	Get MISC3 Long
-	Get MISC4 Long
+	Get COMP_TYPE Long
 	Goto NAMES
 	Get FILENAME String
 	SavePos NAMES
 
-	CLog FILENAME OFFSET ZSIZE SIZE
+	If ZSIZE <> SIZE								# Compressed files
+		If COMP_TYPE = 2
+			ComType LZ4
+			CLog FILENAME OFFSET ZSIZE SIZE
+
+		ElIf COMP_TYPE = 3
+			Comtype ZSTD
+			CLog FILENAME OFFSET ZSIZE SIZE
+		Endif
+
+	Else									# Uncompressed files
+		If ZSIZE > 0
+			Log FILENAME OFFSET ZSIZE
+		Endif
+	Endif
 
 	Math ENTRY + 0x1c
 Next A
+
 
