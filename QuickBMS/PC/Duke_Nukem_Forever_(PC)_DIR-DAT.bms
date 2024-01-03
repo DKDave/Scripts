@@ -1,0 +1,64 @@
+# ================================================================================
+# Duke Nukem Forever
+# SOUND.DIR/.DAT extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Use this script on the SOUNDDIR.DAT file
+
+
+Open FDSE "Sounds.dat" 1
+
+IDString "KCPS"
+
+Goto 0x33f7b
+
+Get COUNT Long
+
+For A = 0 < COUNT
+	Get LEN VARIABLE2
+	GetDString NAME LEN
+	PutArray 0 A NAME
+Next A
+
+
+Goto 8
+Get FILES VARIABLE2
+
+For A = 0 < FILES
+	Get MISC1 VARIABLE2
+	Get MISC2 VARIABLE2
+	Get MISC3 VARIABLE2
+	Get MISC4 VARIABLE2
+	Get MISC5 VARIABLE2
+	Get MISC6 VARIABLE2
+	Get F1_IDX VARIABLE2					# Folder 1
+	Get F2_IDX VARIABLE2					# Folder 2
+	Get FN_IDX VARIABLE2					# Filename
+	Goto 8 0 SEEK_CUR
+	Get MISC10 VARIABLE2
+	Get OFFSET Long
+	Get SIZE VARIABLE2
+	Get UNK1 VARIABLE2
+	Get UNK2 VARIABLE2
+	Get UNK3 VARIABLE2
+	Get UNK4 VARIABLE2
+	Get UNK5 VARIABLE2
+	Get UNK6 VARIABLE2
+	Get UNK7 VARIABLE2
+	Get UNK8 VARIABLE2
+	Get UNK9 VARIABLE2
+	Get UNK10 VARIABLE2
+	Get UNK11 VARIABLE2
+	Get UNK12 VARIABLE2
+
+	GetArray FILENAME 0 FN_IDX
+	GetArray FOLDER1 0 F1_IDX
+	GetArray FOLDER2 0 F2_IDX
+
+	String FILENAME P "%FOLDER1%\%FOLDER2%\%FILENAME%.mp3"
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
+
