@@ -1,0 +1,39 @@
+# ================================================================================
+# Siren (PS2)
+# TBL extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+# Files are extracted directly from the ISO, no need to extract the SIREN.xxx archives first
+
+
+QuickBMSVer -64
+
+Open FDSE "Siren.iso" 1
+
+Get ZSIZE asize 0
+FileXor 0xff
+Log MEMORY_FILE 0 ZSIZE
+FileXor 0
+
+Goto 4 -1
+Get FILES Long -1
+Goto 0x10 -1
+Get ENTRY Long -1
+Get NAMES Long -1
+
+For A = 0 < FILES
+	Goto ENTRY -1
+	Get OFFSET Long -1
+	Math OFFSET * 0x800
+	Get SIZE Long -1
+	Get NAME_OFF Long -1
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF -1
+	Get FILENAME String -1
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 12
+Next A
+
