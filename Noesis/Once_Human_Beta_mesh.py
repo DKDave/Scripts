@@ -1,17 +1,18 @@
 # ================================================================================
 # Once Human Beta (2023)
 # .MESH viewer
-# Noesis script by DKDave, 2023 - last updated: 1 January 2024
+# Noesis script by DKDave, 2023 - last updated: 6 January 2024
 # ================================================================================
 
-# Make sure that .mesh, .gim, .mtgm .mtl are all in the same folder, with textures in a "tex" subfolder
+# SET BASE_FOLDER TO YOUR OWN MAIN FOLDER FIRST
+
 
 # TO DO:
 # Process other texture types (control/f/r)
 
 
-from inc_noesis import *
 
+from inc_noesis import *
 
 def registerNoesisTypes():
 	handle = noesis.register("Once Human (Beta)",".mesh")
@@ -32,6 +33,15 @@ def bcLoadModel(data, mdlList):
 	bs = NoeBitStream(data)
 	ctx = rapi.rpgCreateContext()
 
+	global base_folder
+	base_folder = ""								# SET THIS BEFORE USING THE SCRIPT
+
+	if base_folder == "":
+		print("ERROR:\tBase folder has not yet been set!")
+		return 0
+
+	rapi.rpgSetOption(noesis.RPGOPT_SWAPHANDEDNESS, 1)
+
 	curr_folder = rapi.getDirForFilePath(rapi.getInputName()).lower()
 	curr_file = rapi.getLocalFileName(rapi.getInputName()).lower()
 
@@ -51,36 +61,33 @@ def bcLoadModel(data, mdlList):
 
 	gm = open(curr_folder + gim_file, "rb")
 	submesh_count = 0
-	submesh_flag = 0
 	submesh_info = []
 	mat_files = []
-	flag1 = 0
-	flag2 = 0
 
 	while True:
 		text = gm.readline().decode("ascii").replace("\x0a", "")
 
-		if "<Sub" in text and submesh_flag == 1:
-			submesh_count += 1
+		if "<SubMesh>" in text:
+			while True:
+				subtext = gm.readline().decode("ascii").replace("\x0a", "")
 
-		if "Name=" in text:
-			submesh_name = text.replace("\t\t\tName=", "")
-			flag1 = 1
+				if "<Sub" in subtext:
+					submesh_count += 1
 
-		if "MtlIdx=" in text:
-			submesh_mat = text.replace("\t\t\tMtlIdx=\x22", "").replace("\x22", "")	
-			flag2 = 1
+				if "Name=" in subtext:
+					submesh_name = subtext.replace("\t\t\tName=", "").replace("\x22", "").replace(" />", "")
 
-		if "<SubMesh" in text:
-			submesh_flag = 1
+				if "MtlIdx=" in subtext:
+					submesh_mat = subtext.replace("\t\t\tMtlIdx=\x22", "").replace("\x22", "")	
 
-		if "</SubMesh>" in text:
+				if "/>" in subtext:
+					submesh_info.append([submesh_name, int(submesh_mat)])
+
+				if "</SubMesh>" in subtext:
+					break
+
+		if "</NeoX>" in text:
 			break
-
-		if flag1 == 1 and flag2 == 1:
-			submesh_info.append([submesh_name, int(submesh_mat)])
-			flag1 = 0
-			flag2 = 0
 
 	gm.close()
 
@@ -102,9 +109,8 @@ def bcLoadModel(data, mdlList):
 			text = mtg.readline().decode("ascii").replace("\x0a", "")
 
 			if "FileName=" in text:
-				material_file = text.replace("\t\t\tFileName=\x22", "")
-				material_file = material_file.replace("\x22 />", "").split("/")
-				material_file = material_file[len(material_file)-1]
+				material_file = text.replace("\t\t\tFileName=\x22", "").replace("\x22 />", "")
+				material_file = material_file.replace("/", "\\")
 				mat_files.append(material_file)
 
 			if "</NeoX>" in text:
@@ -146,50 +152,82 @@ def bcLoadModel(data, mdlList):
 
 	bs.seek(len(data) - 14)
 	submesh_header = bs.readUInt()
+	vert_data = submesh_header + (submesh_count * 10) + 10
 
 	bs.seek(submesh_header)
 	colour_count = 0
+	uv_size = 0
+	colour_size = 0
+	vert_off = 0
+	uv_off = 0
+	face_off = 0
 
 	for a in range(submesh_count):
-		temp1 = bs.readUInt()
-		temp2 = bs.readUInt()
-		temp3 = bs.readUByte()								# flag for ?
+		temp1 = bs.readUInt()								# vertex count
+		temp2 = bs.readUInt()								# triangle count
+		temp3 = bs.readUByte()								# Number of UV sets for this submesh
 		temp4 = bs.readUByte()								# flag if colours are present for this submesh
-		submesh_info2.append([temp1, temp2, temp3, temp4])
+
+		submesh_info2.append([temp1, temp2, temp3, temp4, vert_off, uv_off, face_off])
 
 		if temp4 == 1:
-			colour_count += temp1							# vertex count for colours
+			colour_size += (temp1 * 4)
 
-	bs.readUShort()
+		vert_off += temp1
+		uv_off += temp1 * temp3
+		uv_size += (temp1 * temp3 * 8)
+		face_off += (temp2 * 6)
+
+
+	bs.readUShort()										# Always 1 ?
 	total_verts = bs.readUInt()
 	total_faces = bs.readUInt()
 
-	vertices = bs.readBytes(total_verts * 12)
-	normals = bs.readBytes(total_verts * 12)
-	bs.readUShort()
-	misc_buffer = bs.readBytes(total_verts * 12)
-	face_data = bs.tell()
-	bs.seek(total_faces * 6, 1)									# Skip face data for now
-	uvs = bs.readBytes(total_verts * 8)
-	colours = bs.readBytes(colour_count * 4)							# Vertex colours
+	norm_data = vert_data + (total_verts * 12)
+	bs.readUShort()										# Always 1 ?
+	misc_data = norm_data + (total_verts * 12) + 2
+	face_data = misc_data + (total_verts * 12)
+	uv_data = face_data + (total_faces * 6)
+	colour_data = uv_data + uv_size
 
 	if bone_flag == 1:
-		bone_idx = bs.readBytes(total_verts * 8)							# 4 Shorts
+		bone_data = colour_data + colour_size
+		bs.seek(bone_data)
+		bone_idx = bs.readBytes(total_verts * 8)							# 4 UShorts
 		bone_weights = bs.readBytes(total_verts * 0x10)						# 4 Floats
 		rapi.rpgBindBoneIndexBuffer(bone_idx, noesis.RPGEODATA_SHORT, 8, 4)
 		rapi.rpgBindBoneWeightBuffer(bone_weights, noesis.RPGEODATA_FLOAT, 0x10, 4)
 
-	rapi.rpgBindPositionBuffer(vertices, noesis.RPGEODATA_FLOAT, 12)
-	rapi.rpgBindNormalBuffer(normals, noesis.RPGEODATA_FLOAT, 12)
-	rapi.rpgBindUV1Buffer(uvs, noesis.RPGEODATA_FLOAT, 8)
-
-	face_start = 0
-
 	for a in range(submesh_count):
+		vert_count = submesh_info2[a][0]
 		face_count = submesh_info2[a][1]
-		bs.seek(face_data + (face_start * 6))
-		faces = bs.readBytes(face_count * 6)
-		face_start += face_count
+		uv_flag = submesh_info2[a][2]
+
+		bs.seek(vert_data + (submesh_info2[a][4] * 12))
+		vertices = bs.readBytes(vert_count * 12)
+
+		bs.seek(norm_data + (submesh_info2[a][4] * 12))
+		normals = bs.readBytes(vert_count * 12)
+
+		if submesh_info2[a][2] == 1:
+			bs.seek(uv_data + (submesh_info2[a][5] * 8))
+			uvs = bs.readBytes(vert_count * 8)
+		else:										# first block of 8 bytes per vertex is not UVs ?
+			bs.seek(uv_data + (submesh_info2[a][5] * 8) + (vert_count *8))
+			uvs = bs.readBytes(vert_count * 8)
+
+		rapi.rpgBindPositionBuffer(vertices, noesis.RPGEODATA_FLOAT, 12)
+		rapi.rpgBindNormalBuffer(normals, noesis.RPGEODATA_FLOAT, 12)
+		rapi.rpgBindUV1Buffer(uvs, noesis.RPGEODATA_FLOAT, 8)
+
+		faces = bytearray(face_count * 6)
+		bs.seek(face_data + submesh_info2[a][6])
+
+# Recalculate face index values for this submesh
+
+		for f in range(face_count * 3):
+			idx = bs.readUShort() - submesh_info2[a][4]
+			struct.pack_into("<H", faces, f * 2, idx)
 
 		rapi.rpgSetName(submesh_info[a][0])
 		rapi.rpgSetMaterial("Material_" + str(submesh_info[a][1]))
@@ -210,33 +248,37 @@ def bcLoadModel(data, mdlList):
 	return 1
 
 
-# Create materials from .mtl file and load textures from "tex" subfolder
+# Create material from .mtl file and load relevant textures
 
 def CreateMaterial(bs, curr_folder, mat_filename, tex_list, mat_list, mat_num):
 
-	check = rapi.checkFileExists(curr_folder + mat_filename)
+	check = rapi.checkFileExists(base_folder + mat_filename)
 
 	if check == 0:
-		print("Material file " + mat_filename + " not found.")
+		print("Material file " + base_folder + mat_filename + " not found.")
 		return tex_list, mat_list
 
-	mf = open(curr_folder + mat_filename, "rb")
+	mf = open(base_folder + mat_filename, "rb")
+
+	material = NoeMaterial("Material_" + str(mat_num), "")
 
 	while True:
 		text = mf.readline().decode("ascii")
 
-		if "<Material\x0a" in text:								# New material definition
-			material = NoeMaterial("Material_" + str(mat_num), "")
+		if "<Material" in text:
+			mat_text = mf.readline().decode("ascii")
+
+			if "</Material>" in mat_text:
+				break
 
 		if "<AlbedoMap" in text:
-			diffuse_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "")
-			diffuse_name = diffuse_name.replace("\x22 \x2f>\x0a", "").split("/")
-			diffuse_name = diffuse_name[len(diffuse_name)-1].replace(".png", ".pvr").replace(".tga", ".pvr")
+			diffuse_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "").replace("\x22 />\x0a", "")
+			diffuse_name = diffuse_name.replace(".png", ".pvr").replace(".tga", ".pvr")
 
-			check = rapi.checkFileExists(curr_folder + "tex\\" + diffuse_name)
+			check = rapi.checkFileExists(base_folder + diffuse_name)
 
 			if check == 1:
-				tex_file = NoeBitStream(rapi.loadIntoByteArray(curr_folder + "tex\\" + diffuse_name))
+				tex_file = NoeBitStream(rapi.loadIntoByteArray(base_folder + diffuse_name))
 				tex = ProcessPVR(tex_file, diffuse_name)
 				tex.name = diffuse_name
 				tex_list.append(tex)
@@ -245,14 +287,13 @@ def CreateMaterial(bs, curr_folder, mat_filename, tex_list, mat_list, mat_num):
 				print(diffuse_name, " not found.")
 
 		if "<NormalMap" in text:
-			normal_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "")
-			normal_name = normal_name.replace("\x22 \x2f>\x0a", "").split("/")
-			normal_name = normal_name[len(normal_name)-1].replace(".png", ".pvr").replace(".tga", ".pvr")
+			normal_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "").replace("\x22 />\x0a", "")
+			normal_name = normal_name.replace(".png", ".pvr").replace(".tga", ".pvr")
 
-			check = rapi.checkFileExists(curr_folder + "tex\\" + normal_name)
+			check = rapi.checkFileExists(base_folder + normal_name)
 
 			if check == 1:
-				tex_file = NoeBitStream(rapi.loadIntoByteArray(curr_folder + "tex\\" + normal_name))
+				tex_file = NoeBitStream(rapi.loadIntoByteArray(base_folder + normal_name))
 				tex = ProcessPVR(tex_file, normal_name)
 				tex.name = normal_name
 				tex_list.append(tex)
@@ -260,12 +301,43 @@ def CreateMaterial(bs, curr_folder, mat_filename, tex_list, mat_list, mat_num):
 			else:
 				print(normal_name, " not found.")
 
-		if "</Material>" in text:								# End of current material definition
-			mat_list.append(material)
-			mat_num += 1
+		if "<ControlMap" in text:
+			control_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "").replace("\x22 />\x0a", "")
+			control_name = control_name.replace(".png", ".pvr").replace(".tga", ".pvr")
+
+			check = rapi.checkFileExists(base_folder + control_name)
+
+			if check == 1:
+				tex_file = NoeBitStream(rapi.loadIntoByteArray(base_folder + control_name))
+				tex = ProcessPVR(tex_file, control_name)
+				tex.name = control_name
+				tex_list.append(tex)
+#				material.set????Texture(control_name)					# which type ?
+			else:
+				print(control_name, " not found.")
+
+		if "<FeatureMap" in text:
+			feature_name = mf.readline().decode("ascii").replace("\t\t\t\tValue=\x22", "").replace("\x22 />\x0a", "")
+			feature_name = feature_name.replace(".png", ".pvr").replace(".tga", ".pvr")
+
+			check = rapi.checkFileExists(base_folder + feature_name)
+
+			if check == 1:
+				tex_file = NoeBitStream(rapi.loadIntoByteArray(base_folder + feature_name))
+				tex = ProcessPVR(tex_file, feature_name)
+				tex.name = feature_name
+				tex_list.append(tex)
+				material.setSpecularTexture(feature_name)
+			else:
+				print(feature_name, " not found.")
+
 
 		if "</NeoX>" in text:
 			break
+
+		if "</Material>" in text:								# End of current material definition
+			mat_list.append(material)
+			mat_num += 1
 
 	mf.close()
 
@@ -295,9 +367,9 @@ def ProcessPVR(pvr, tex_name):
 		return 0
 
 	if "_normal" in tex_name or "_n" in tex_name:
-		raw_image = rapi.imageDecodeRaw(raw_image, width, height, "a8g8b8r8")
+		raw_image = rapi.imageDecodeRaw(raw_image, width, height, "a8g8b8r8")				# Normal textures need channels swapping
 
-	tex1 = NoeTexture("Name", width, height, raw_image, noesis.NOESISTEX_RGBA32)
+	tex1 = NoeTexture(tex_name, width, height, raw_image, noesis.NOESISTEX_RGBA32)
 
 	return tex1
 
