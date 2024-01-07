@@ -4,6 +4,11 @@
 # QuickBMS script by DKDave, 2023
 # ================================================================================
 
+# Notes:
+# Audio files will have a VAG header added so that they can be played directly
+# Music files are split into separate mono files for each channel, so will need to be combined separately
+# Files are split into separate folders for each PTD archive
+
 
 Get ARC_COUNT Long
 Math ENTRY = 4
@@ -15,6 +20,8 @@ Goto ARC_NAMES
 For A = 1 To ARC_COUNT
 	GetDString PTD_FILE 0x10
 	Open FDSE PTD_FILE A
+	String PTD_FILE - ".PTD"
+	PutArray 0 A PTD_FILE
 Next A
 
 Math FNUM = 0
@@ -22,6 +29,7 @@ Math FNUM = 0
 For A = 1 To ARC_COUNT
 	Goto ENTRY
 	Get COUNT1 Long
+	GetArray FLDR 0 A
 
 	For B = 0 < COUNT1
 		Goto ENTRY2
@@ -30,16 +38,39 @@ For A = 1 To ARC_COUNT
 		Get SIZE Long
 
 		If SIZE > 0
-			String EXT = ""
-			Goto OFFSET A
-			GetDString TYPE 4 A
+			If A = 2 Or A > 4								# Audio archives
+				Endian Big
+				Log MEMORY_FILE 0 0
+				PutVarChr MEMORY_FILE 0x2f 0 Byte
+				PutVarChr MEMORY_FILE 0 0x56414770 Long
+				PutVarChr MEMORY_FILE 4 0x04 Long
+				PutVarChr MEMORY_FILE 0x0c SIZE Long
+				PutVarChr MEMORY_FILE 0x10 0xac44 Long
+				Endian Little
 
-			If TYPE = "TIM2"
-				String EXT = ".tm2"
+				String FILENAME P "%FLDR%\JIGOKU_%FNUM%.vag"
+
+				Append
+				Log MEMORY_FILE OFFSET SIZE A
+				Append
+
+				Get MEM_SIZE asize -1
+				Log FILENAME 0 MEM_SIZE -1
+
+			Else									# Everything else
+				Goto OFFSET A
+				GetDString TYPE 4 A
+
+				If TYPE = "TIM2"
+					String EXT = ".tm2"
+				Else
+					String EXT = ""
+				Endif
+
+				String FILENAME P "%FLDR%\JIGOKU_%FNUM%%EXT%"
+				Log FILENAME OFFSET SIZE A
 			Endif
 
-			String FILENAME P "JIGOKU_%A%_%FNUM%%EXT%"
-			Log FILENAME OFFSET SIZE A
 			Math FNUM + 1
 		Endif
 
