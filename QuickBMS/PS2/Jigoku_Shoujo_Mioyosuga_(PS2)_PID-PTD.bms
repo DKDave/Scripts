@@ -1,0 +1,52 @@
+# ================================================================================
+# Jigoku Shoujo Mioyosuga (PS2)
+# PID / PTD extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Get ARC_COUNT Long
+Math ENTRY = 4
+XMath ARC_NAMES "(ARC_COUNT * 4) + 4"
+XMath ENTRY2 "ARC_NAMES + (ARC_COUNT * 0x10)"
+
+Goto ARC_NAMES
+
+For A = 1 To ARC_COUNT
+	GetDString PTD_FILE 0x10
+	Open FDSE PTD_FILE A
+Next A
+
+Math FNUM = 0
+
+For A = 1 To ARC_COUNT
+	Goto ENTRY
+	Get COUNT1 Long
+
+	For B = 0 < COUNT1
+		Goto ENTRY2
+		Get OFFSET Long
+		Math OFFSET * 0x800
+		Get SIZE Long
+
+		If SIZE > 0
+			String EXT = ""
+			Goto OFFSET A
+			GetDString TYPE 4 A
+
+			If TYPE = "TIM2"
+				String EXT = ".tm2"
+			Endif
+
+			String FILENAME P "JIGOKU_%A%_%FNUM%%EXT%"
+			Log FILENAME OFFSET SIZE A
+			Math FNUM + 1
+		Endif
+
+		Math ENTRY2 + 8
+	Next B
+
+	Math ENTRY + 4
+Next A
+
+
