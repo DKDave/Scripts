@@ -1,0 +1,27 @@
+# ================================================================================
+# Revenant (PC, 1999)
+# SOUND.PAK extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+Get ENTRY Long
+Get NAMES Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get SIZE Long
+	Goto NAME_OFF
+	Get FILENAME String
+	String FILENAME - ".\"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x22
+Next A
+
