@@ -1,0 +1,27 @@
+# ================================================================================
+# Bang! Gunship Elite (Dreamcast)
+# TOC/PAK extract
+# QuickBMS script by DKDave, 2021
+# ================================================================================
+
+Open FDDE "PAK" 1
+
+Get FILES Long
+Get JUNK Long
+XMath NAME_DATA "(FILES * 0x0c) + 8"
+Math ENTRY = 8
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFFSET Short
+	Math NAME_OFFSET + NAME_DATA
+	Get NAME_SIZE Short
+	Get OFFSET Long
+	Get SIZE Long
+	Goto NAME_OFFSET
+	GetDString FILENAME NAME_SIZE
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x0c
+Next A
