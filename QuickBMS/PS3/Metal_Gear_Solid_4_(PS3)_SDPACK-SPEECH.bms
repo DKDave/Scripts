@@ -1,0 +1,28 @@
+# ================================================================================
+# Metal Gear Solid 4: Guns Of The Patriots (PS3)
+# Extract audio from SDPACK.DAT and SPEECH.DAT archives
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Endian Big
+
+Get TEMPNAME basename
+
+For A = 0
+	FindLoc OFFSET String "SSPF" 0 ""
+
+	If OFFSET = ""
+		Break
+	Endif
+
+	Goto OFFSET
+	Goto 8 0 SEEK_CUR
+	Get SIZE Long
+
+	String FILENAME P "%TEMPNAME%_%A%.ssp"
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
