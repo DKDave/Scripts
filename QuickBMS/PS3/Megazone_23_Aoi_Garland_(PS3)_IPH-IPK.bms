@@ -1,0 +1,29 @@
+# ================================================================================
+# Megazone 23: Aoi Garland (PS3)
+# IPH/IPK extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+
+IDString "IPK1"
+Open FDDE "ipk" 1
+ComType zlib
+
+Goto  8
+Get ENTRIES Long
+Goto 0x10
+
+For A = 0 < ENTRIES
+	GetDString FILENAME 0x40
+	Get COMP_TYPE Long
+	Get ZSIZE Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	If COMP_TYPE = 0
+		Log FILENAME OFFSET ZSIZE 1
+	Elif COMP_TYPE = 3
+		CLog FILENAME OFFSET ZSIZE SIZE 1
+	Endif
+Next A
+
