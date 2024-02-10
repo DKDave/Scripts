@@ -1,0 +1,33 @@
+# ================================================================================
+# Earth And Beyond (PC, 2002)
+# MIX archive extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+IDString "MIX1"
+
+Get ENTRY Long
+Get NAMES Long
+Math NAMES + 4
+Goto ENTRY
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+	Goto NAMES
+	Get LEN Byte
+	GetDString FILENAME LEN
+	SavePos NAMES
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 12
+Next A
+
+
+
