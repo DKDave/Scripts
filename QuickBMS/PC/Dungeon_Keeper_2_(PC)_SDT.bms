@@ -1,0 +1,26 @@
+# ================================================================================
+# Dungeon Keeper 2 (PC)
+# SDT audio extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Get FILES Long
+Math ENTRY = 4
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Goto OFFSET
+	Get HEADER_SIZE Long
+	Math OFFSET + HEADER_SIZE
+	Get SIZE Long
+	GetDString FILENAME 0x10
+
+	If SIZE <> 0
+		Log FILENAME OFFSET SIZE
+	Endif
+
+	Math ENTRY + 4
+Next A
+
