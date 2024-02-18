@@ -1,0 +1,78 @@
+# ================================================================================
+# Rule Of Rose (PS2)
+# STR_TBL.BIN audio extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+# Note: this script uses the filenames from STR_TBL.BIN rather than the original .STR filenames
+# Not sure if the sample rates are 100% correct for some files ...
+
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long					# SShd header size
+PutVarChr MEMORY_FILE 0x08 2 Long						# Sony ADPCM
+PutVarChr MEMORY_FILE 0x0c 48000 Long					# Sample rate
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long					# Loop info
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+
+
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	GetDString FILENAME 0x1c
+
+	If FILENAME = ""
+		Break
+	Endif
+
+	Get FILE_ID Long							# ID of .STR file
+
+	If FILE_ID >= 100000							# Seems to work (mostly)
+		Math CHANNELS = 2
+		Math RATE = 48000
+		Math INTERLEAVE = 0x10
+	Else
+		Math CHANNELS = 1
+		Math RATE = 44100
+		Math INTERLEAVE = 0
+	Endif
+
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+	PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+
+	String FILENAME2 P "%FILE_ID%"
+	StrLen LEN FILENAME2
+
+	If LEN = 2								# Is there a better way to do this in QuickBMS?
+		String FILENAME2 P "S0000%FILE_ID%.STR"
+	Elif LEN = 3
+		String FILENAME2 P "S000%FILE_ID%.STR"
+	Elif LEN = 4
+		String FILENAME2 P "S00%FILE_ID%.STR"
+	Elif LEN = 5
+		String FILENAME2 P "S0%FILE_ID%.STR"
+	Elif LEN = 6
+		String FILENAME2 P "S%FILE_ID%.STR"
+	Endif
+
+	Open FDSE FILENAME2 1
+	Get SIZE asize 1
+
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	String FILENAME + ".ss2"
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME 0 SIZE 1
+	Append
+
+	Math ENTRY + 0x38
+Next A
+
