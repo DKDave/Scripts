@@ -1,0 +1,60 @@
+# ================================================================================
+# Baroque (PS2)
+# BRQSOUND extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Get FILE_END asize
+Math ENTRY = 0
+
+For A = 0
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get OFFSET2 Long
+	Math OFFSET2 * 0x800
+	XMath SIZE "OFFSET2 - OFFSET"
+
+	If OFFSET = FILE_END
+		Break
+	Endif
+
+	Goto OFFSET
+	GetDString TYPE 4
+
+	If TYPE = "VAGp"
+		Goto 8 0 SEEK_CUR
+		Get VAG_SIZE Long
+		ReverseLong VAG_SIZE
+		Math VAG_SIZE + 0x30
+		Goto 0x10 0 SEEK_CUR
+		GetDString FILENAME 0x10
+		String FILENAME - ".wav"
+		String FILENAME + ".vag"
+		Log FILENAME OFFSET VAG_SIZE
+
+	Elif TYPE = "STER"
+		Goto 8 0 SEEK_CUR
+		Get VAG_SIZE Long
+		ReverseLong VAG_SIZE
+		Math VAG_SIZE * 2
+		Math VAG_SIZE + 0x30
+		Goto 0x10 0 SEEK_CUR
+		GetDString FILENAME 0x10
+		String FILENAME - ".wav"
+		String FILENAME + ".ster"
+		Log FILENAME OFFSET VAG_SIZE
+
+	Elif A = 0
+		String FILENAME = "BRQSOUND.BD"
+		Log FILENAME OFFSET SIZE
+
+	Elif A = 1
+		String FILENAME = "BRQSOUND.HD"
+		Log FILENAME OFFSET SIZE
+
+	Endif
+
+	Math ENTRY + 4
+Next A
