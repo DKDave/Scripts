@@ -1,0 +1,69 @@
+# ================================================================================
+# Run Like Hell (PS2)
+# SFX archive extract
+# QuickBMS script by DKDave 2024
+# ================================================================================
+
+# Note: The filenames are truncated, so there will be duplicates that are different audio files
+
+
+IDString "SFX0"
+
+Goto 0x10
+Get DATA1_START Long
+Get DATA2_START Long
+Get FILES Long
+
+Math ENTRY = 0x20
+
+# Create SS2 header
+
+Log MEMORY_FILE 0 0
+PutVarChr MEMORY_FILE 0x27 0 Byte
+PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+PutVarChr MEMORY_FILE 0x04 0x18 Long
+PutVarChr MEMORY_FILE 0x08 2 Long						# Sony ADPCM
+PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10						# Filenames are truncated to 16 bytes
+	String FILENAME + ".ss2"
+	Get MISC1 Short
+	Get RATE Short
+	Get SIZE Long
+	Get OFFSET Long							# Bit 24 = data section 0 or 1, Bit 25 = mono/stereo
+	XMath SECTION "(OFFSET & 0x1000000) >> 24"				# Data section 0 or 1
+	XMath CHANNELS "((OFFSET & 0x2000000) >> 25) + 1"			# 0 = mono, 1 = stereo
+	Math OFFSET & 0xFFFFFF						# Get actual relative offset
+	Get INTERLEAVE Short						# 0xFFFF if mono
+	Get MISC2 Short
+
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+
+	If CHANNELS = 1
+		PutVarChr MEMORY_FILE 0x14 0 Long
+	Else
+		PutVarChr MEMORY_FILE 0x14 INTERLEAVE Long
+	Endif
+
+	If SECTION = 0
+		Math OFFSET + DATA1_START
+	Else
+		Math OFFSET * 0x800
+		Math OFFSET + DATA2_START
+	Endif
+
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+	Log FILENAME 0 0x28 -1
+	Append
+	Log FILENAME OFFSET SIZE
+	Append
+
+	Math ENTRY + 0x20
+Next A
+
+
