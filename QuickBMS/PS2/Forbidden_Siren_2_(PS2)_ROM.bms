@@ -1,0 +1,40 @@
+# ================================================================================
+# Forbidden Siren 2 (PS2)
+# SPK.ROM / ROM.xxx extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+IDString "SLPK"
+
+Goto 0x08
+Get FILES Long
+Get NAMES Long
+Math ENTRY = 0x20
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long						# Offset to filename
+	Math NAME_OFF + NAMES
+	Get ARCNAME_OFF Long						# Offset to archive name
+	Math ARCNAME_OFF + NAMES
+	Get OFFSET Long							# Offset
+	Get SIZE Long							# Size
+	XMath FLAG "(SIZE & 0x80000000) >> 31"					# bit 31 = ?
+	Math SIZE & 0x7fffffff
+
+	Goto NAME_OFF
+	Get FILENAME String
+	Goto ARCNAME_OFF
+	Get ARCNAME String
+
+	Open FDSE ARCNAME 1
+
+	If SIZE > 0
+		Log FILENAME OFFSET SIZE 1
+	Endif
+
+	Math ENTRY + 0x10
+Next A
+
+
