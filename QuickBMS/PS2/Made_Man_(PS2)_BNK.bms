@@ -1,0 +1,83 @@
+# ================================================================================
+# Made Man (PS2)
+# Extract audio from .BNK archives
+# QuickBMS script by DKDave, 2024 (amended 19 February 2024)
+# ================================================================================
+
+# Notes:
+# Interleave for stereo files is 0x800 but some don't play correctly at the start
+# Place IMMSOUNDPS2.CUE in the same folder as the .BNK files
+
+
+Open FDSE "IMMSOUNDPS2.CUE" 1								# Filename list
+
+Get TEMPNAME basename
+
+FindLoc NAME_OFF String TEMPNAME 1 ""							# Start of names for this bank file
+
+Get FILES Byte
+Goto 4
+Get DATA_START Long
+Math ENTRY = 0x10
+XMath ENTRY2 "ENTRY + 4 + (FILES * 0x1c)"
+
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Short
+	Get JUNK Short
+	Get MISC2 Long
+	Get MISC3 Long
+	Get MISC4 Long
+	Get MISC5 Long
+	Get MISC6 Long
+	Get RATE Long
+	Goto ENTRY2
+	Get SAMPLES Long
+	Get CHANNELS Byte
+	Get JUNK Threebyte
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	XMath SIZE "(SAMPLES / 0x1c) * 0x10 * CHANNELS"						# 0x1c samples per frame, 0x10 bytes per frame
+
+# Create SS2 header
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x27 0 Byte
+	PutVarChr MEMORY_FILE 0 0x64685353 Long						# SShd
+	PutVarChr MEMORY_FILE 0x04 0x18 Long
+	PutVarChr MEMORY_FILE 0x08 2 Long							# Sony ADPCM
+	PutVarChr MEMORY_FILE 0x0c RATE Long
+	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
+	PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x20 0x64625353 Long						# SSbd
+	PutVarChr MEMORY_FILE 0x24 SIZE Long
+
+	If CHANNELS = 1
+		PutVarChr MEMORY_FILE 0x14 0 Long
+	Else
+		PutVarChr MEMORY_FILE 0x14 0x800 Long
+	Endif
+
+	Goto NAME_OFF 1
+	GetCT JUNK String 0x09 1
+	GetCT JUNK String 0x09 1
+	GetCT FILENAME String 0x09 1
+	GetCT JUNK String 0x0a 1								# End of line
+	SavePos NAME_OFF 1
+
+	String FILENAME + ".ss2"
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x1c
+	Math ENTRY2 + 0x10
+Next A
+
+
