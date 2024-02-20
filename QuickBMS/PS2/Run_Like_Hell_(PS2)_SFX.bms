@@ -4,7 +4,7 @@
 # QuickBMS script by DKDave 2024
 # ================================================================================
 
-# Note: The filenames are truncated, so there will be duplicates that are different audio files
+# Note: because the filenames are truncated, some duplicates are different audio files
 
 
 IDString "SFX0"
@@ -16,30 +16,31 @@ Get FILES Long
 
 Math ENTRY = 0x20
 
-# Create SS2 header
-
-Log MEMORY_FILE 0 0
-PutVarChr MEMORY_FILE 0x27 0 Byte
-PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
-PutVarChr MEMORY_FILE 0x04 0x18 Long
-PutVarChr MEMORY_FILE 0x08 2 Long						# Sony ADPCM
-PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
-PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
-PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
-
 For A = 0 < FILES
 	Goto ENTRY
-	GetDString FILENAME 0x10						# Filenames are truncated to 16 bytes
+	GetDString FILENAME 0x10							# Filenames are truncated to 16 bytes
 	String FILENAME + ".ss2"
 	Get MISC1 Short
 	Get RATE Short
 	Get SIZE Long
-	Get OFFSET Long							# Bit 24 = data section 0 or 1, Bit 25 = mono/stereo
-	XMath SECTION "(OFFSET & 0x1000000) >> 24"				# Data section 0 or 1
-	XMath CHANNELS "((OFFSET & 0x2000000) >> 25) + 1"			# 0 = mono, 1 = stereo
-	Math OFFSET & 0xFFFFFF						# Get actual relative offset
-	Get INTERLEAVE Short						# 0xFFFF if mono
+	Get OFFSET Long								# Bit 24 = data section 0 or 1, Bit 25 = mono/stereo
+	XMath SECTION "(OFFSET & 0x1000000) >> 24"					# Data section 0 or 1
+	XMath CHANNELS "((OFFSET & 0x2000000) >> 25) + 1"				# 0 = mono, 1 = stereo
+	Math OFFSET & 0xFFFFFF							# Get actual relative offset
+	Get INTERLEAVE Short							# 0xFFFF if mono
 	Get MISC2 Short
+
+
+# Create SS2 header
+
+	Log MEMORY_FILE 0 0
+	PutVarChr MEMORY_FILE 0x27 0 Byte
+	PutVarChr MEMORY_FILE 0 0x64685353 Long					# SShd
+	PutVarChr MEMORY_FILE 0x04 0x18 Long
+	PutVarChr MEMORY_FILE 0x08 2 Long						# Sony ADPCM
+	PutVarChr MEMORY_FILE 0x18 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x1c 0xFFFFFFFF Long
+	PutVarChr MEMORY_FILE 0x20 0x64625353 Long					# SSbd
 
 	PutVarChr MEMORY_FILE 0x0c RATE Long
 	PutVarChr MEMORY_FILE 0x10 CHANNELS Long
@@ -58,10 +59,13 @@ For A = 0 < FILES
 	Endif
 
 	PutVarChr MEMORY_FILE 0x24 SIZE Long
-	Log FILENAME 0 0x28 -1
+
 	Append
-	Log FILENAME OFFSET SIZE
+	Log MEMORY_FILE OFFSET SIZE
 	Append
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
 
 	Math ENTRY + 0x20
 Next A
