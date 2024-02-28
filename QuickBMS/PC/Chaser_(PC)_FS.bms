@@ -1,0 +1,83 @@
+# ================================================================================
+# Chaser (PC, 2003)
+# FS archive extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+ComType LZSS
+
+Goto -4
+Get INFO Long
+Goto INFO
+Get TABLE_SIZE Long
+Get MISC1 Long
+Get DIR_SIZE Long
+Get DIR_COUNT Long
+Get NAMES_SIZE Long
+Get FILES Long
+
+XMath DIRS "INFO + 0x18"
+XMath NAMES "INFO + 0x18 + DIR_SIZE"
+XMath ENTRY "INFO + 0x18 + DIR_SIZE + NAMES_SIZE"
+
+Goto DIRS
+
+For A = 0 < DIR_COUNT
+	Get NAME String
+	PutArray 0 A NAME
+
+Next A
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Get FLDR_NUM Short
+	Get UNK1 Short
+	GetArray FLDR_NAME 0 FLDR_NUM
+	Goto NAMES
+	Get FILENAME String
+	SavePos NAMES
+
+	String FILENAME P "%FLDR_NAME%\%FILENAME%"
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		Goto OFFSET
+		Get COUNT Long
+		Math COUNT / 8
+		XMath DATA_START "OFFSET + (COUNT * 8)"
+
+		Goto OFFSET
+		Log MEMORY_FILE 0 0
+
+		For B = 0 < COUNT
+			Get OFFSET2 Long
+			Get SIZE2 Short							# Not SIZE ?
+			Get ZSIZE2 Short
+			Math OFFSET2 + OFFSET
+
+			If ZSIZE2 = 0
+				Append
+				Log MEMORY_FILE OFFSET2 0x4000				# Max block size
+				Append
+			Else
+				Append
+				CLog MEMORY_FILE OFFSET2 ZSIZE2 0x4000
+				Append
+			Endif
+		Next B
+
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+
+	Endif
+
+	Math ENTRY + 0x10
+Next A
+
+
+
