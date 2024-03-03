@@ -1,0 +1,45 @@
+# Normal Fishing (Demo) (PC)
+# Audio extract
+# QuickBMS script by DKDave, 2024
+
+# Use this script on the data.win file, with audiogroup1.dat and audiogroup2.dat in the same folder
+
+
+Open FDSE "audiogroup1.dat" 1
+Open FDSE "audiogroup2.dat" 2
+
+Goto 0x268							# SOND audio table
+Get FILES Long
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get INFO_OFF Long
+	Goto INFO_OFF
+	Get FLDR_OFF Long						# Absolute offset of folder name (or just song name?)
+	Get MISC2 Long						# Always 0x65
+	Get MISC3 Long						# Always 0
+	Get FNAME_OFF Long					# Absolute offset of filename
+	Get MISC5 Long
+	Get MISC6 Long						# Some float - volume ?
+	Get MISC7 Long
+	Get ARC Long						# Archive number (1 or 2)
+	Get IDX Long						# Index of file in corresponding archive
+
+	Goto FLDR_OFF
+	Get FOLDER String
+	Goto FNAME_OFF
+	Get FILENAME String
+
+	XMath INDEX_OFF "(IDX * 4) + 0x14"
+	Goto INDEX_OFF ARC
+	Get DATA_OFF Long ARC
+	Goto DATA_OFF ARC
+	Get SIZE Long ARC
+	SavePos OFFSET ARC
+
+	Log FILENAME OFFSET SIZE ARC
+
+	Math ENTRY + 4
+Next A
+
