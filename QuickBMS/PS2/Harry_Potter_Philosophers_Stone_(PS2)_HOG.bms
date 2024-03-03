@@ -1,0 +1,70 @@
+# ================================================================================
+# Harry Potter And The Philosopher's Stone (aka Sorcerer's Stone) (PS2)
+# .HOG archive extract
+# QuickBMS script by DKDave, 2023
+# ================================================================================
+
+
+ComType DBPF
+
+IDString "WART3.00"
+
+Get FILES Long
+Get FNAMES Long
+Get JUNK Long
+Get FNAME_SIZE Long
+XMath NAMES "FNAMES + FNAME_SIZE"
+Math ENTRY = 0x18
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get ZSIZE Long								# Compressed size (0 if file isn't compressed)
+	Get SIZE Long								# Decompressed size (normal file size if not compressed)
+	Get MISC2 Long
+	Get NAME_OFF Long
+	Get FNAME_OFF Long
+	Math NAME_OFF + NAMES
+	Math FNAME_OFF + FNAMES
+	Goto NAME_OFF
+	Get FILENAME String
+	Goto FNAME_OFF
+	Get FOLDER_NAME String
+	String FILENAME P "%FOLDER_NAME%%FILENAME%"
+
+	Log MEMORY_FILE 0 0
+
+	If ZSIZE = 0								# Not compressed
+		If SIZE > 0
+			Log FILENAME OFFSET SIZE
+		Endif
+
+	Else									# Compressed files
+		XMath END "OFFSET + ZSIZE"
+
+		For B = 0								# Join uncompressed parts
+			If OFFSET = END
+				Break
+			Endif
+
+			Goto OFFSET
+			Get ZSIZE2 Long
+			SavePos OFFSET
+
+			Append
+			CLog MEMORY_FILE OFFSET ZSIZE2 0x100000
+			Append
+
+			Math OFFSET + ZSIZE2
+
+		Next B
+
+		Get MEM_SIZE asize -1
+		Log FILENAME 0 MEM_SIZE -1
+	Endif
+
+	Math ENTRY + 0x18
+Next A
+
+
+
