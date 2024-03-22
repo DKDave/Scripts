@@ -1,20 +1,23 @@
 # ================================================================================
-# Decode audio from Smush SAN video files
+# Decode audio from Smush SAN video files in some Lucas Arts games
 # Python script by DKDave, 2024
+# Last updated: 22 March 2024 (fixed error in RIFF/WAVE header)
 # ================================================================================
 
 # Decodes the audio from SAN video files and creates playable .wav files
 # Audio decoding based on information from https://github.com/scummvm/scummvm/blob/master/engines/scumm/smush/smush_player.cpp
 
 # Notes:
-
 # Currently only supports IACT audio data - others will be added
 
 # Tested on the following games:
+
 # Star Wars: Droidworks (1998)
+# Jedi Knight: Mysteries Of The Sith (1998)
+# Outlaws (1997)
 
 
-import os, sys, struct
+import os, sys, struct, gllob
 
 
 # Decode one audio block (2048 samples)
@@ -78,7 +81,27 @@ def align(offset, size):
 		return 0
 
 
-# Load SAN video file and extract audio
+
+print("================================================================================")
+print("Lucas Arts SAN audio extractor")
+print("Python script by DKDave, 2024")
+print("================================================================================")
+print("")
+
+print("Processing all SAN files in current folder ...")
+print("")
+
+for filename in glob.glob("*.san"):
+#	read_file(filename)
+	print(filename)
+
+
+return
+
+
+
+
+
 
 if len(sys.argv) != 2:
 	print("Error: No input filename given")
@@ -142,7 +165,7 @@ else:
 		final_audio += decode_block(audio_buffer[block_offset + 2: block_offset + 2 + block_size])
 		block_offset += block_size + 2
 
-	wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(final_audio) + 8, b"WAVEfmt ", 0x10, 1, 2, sample_rate, sample_rate * 4, 4, 16, b"data", len(final_audio))
+	wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(final_audio) + 0x24, b"WAVEfmt ", 0x10, 1, 2, sample_rate, sample_rate * 4, 4, 16, b"data", len(final_audio))
 
 	x = open(outfile, "wb")
 	x.write(wav_header + final_audio)
