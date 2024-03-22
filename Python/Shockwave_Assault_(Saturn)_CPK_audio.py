@@ -96,7 +96,7 @@ def read_file(file):
 
 
 	if len(audio) > 0:
-		wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 8, b"WAVEfmt ", 0x10, 1, channels, sample_rate, sample_rate * channels * (bits//8), channels * (bits//8), bits, b"data", len(audio))
+		wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 0x24, b"WAVEfmt ", 0x10, 1, channels, sample_rate, sample_rate * channels * (bits//8), channels * (bits//8), bits, b"data", len(audio))
 
 		print("Writing " + out_file + " (" + str(bits) + " bit, " + str(sample_rate) + " Hz, " + str(channels) + " channels)")
 
