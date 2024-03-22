@@ -77,7 +77,9 @@ def bcLoadModel(data, mdlList):
 			elif tex_fmt == 6:
 
 				if x360 == 1:
+					raw_image = rapi.swapEndianArray(raw_image, 4)
 					raw_image = rapi.imageUntile360Raw(raw_image, width, height, 4)
+					raw_image = rapi.imageSwapChannelRGBA32(raw_image, 0, 2)
 
 				raw_image = rapi.imageFlipRGBA32(raw_image, width, height, 0, 1)
 				tex = NoeTexture("Texture_" + str(tex_count), width, height, raw_image, noesis.NOESISTEX_RGBA32)
