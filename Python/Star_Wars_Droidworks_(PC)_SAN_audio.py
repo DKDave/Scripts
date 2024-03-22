@@ -17,7 +17,7 @@
 # Outlaws (1997)
 
 
-import os, sys, struct, gllob
+import os, sys, struct, glob
 
 
 # Decode one audio block (2048 samples)
