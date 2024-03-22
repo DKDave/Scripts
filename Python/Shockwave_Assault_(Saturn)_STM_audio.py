@@ -43,7 +43,7 @@ def read_file(file):
 		out_file = file.split(".")[0] + "_" + str(a) + ".wav"						# No filenames stored, so create one
 
 		if len(audio) > 0:
-			wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 8, b"WAVEfmt ", 0x10, 1, 1, 22050, 22050, 1, 8, b"data", len(audio))
+			wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 0x24, b"WAVEfmt ", 0x10, 1, 1, 22050, 22050, 1, 8, b"data", len(audio))
 
 			for b in range(len(audio)):
 				temp = struct.unpack_from("<b", audio, b)[0]
