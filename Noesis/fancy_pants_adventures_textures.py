@@ -1,6 +1,6 @@
 # Fancy Pants Adventures (PS3 / Android / X360)
 # Texture Viewer
-# Noesis script by DKDave, 2023
+# Noesis script by DKDave, 2023 (last updated 25 March 2024)
 
 # Note: some .tex files seem to have incorrect dimensions stored in the file and don't display correctly
 # XBox360 textures use the same texture types, but are tiled, so change the x360 = 0 to x360 = 1 if you want to extract those
@@ -30,7 +30,7 @@ def bcLoadModel(data, mdlList):
 	if check == 0x52535243:
 		bs = NoeBitStream(data, NOE_BIGENDIAN)
 
-	x360 = 0										# 0 = for PS3/Android, 1 = XBox360
+	x360 = 1										# 0 = for PS3/Android, 1 = XBox360
 
 	tex_list = []
 
@@ -57,7 +57,15 @@ def bcLoadModel(data, mdlList):
 			bs.seek(offset + 0x60)
 			raw_image = bs.readBytes(tex_data_size)
 
-			if tex_fmt == 0x14:
+#			print("TYPE:\t", tex_fmt, "\t", width, "\t", height)
+
+			if tex_fmt == 3:
+				raw_image = rapi.imageDecodeRaw(raw_image, width, height, "b5g6r5")
+				raw_image = rapi.imageFlipRGBA32(raw_image, width, height, 0, 1)
+				tex = NoeTexture("Texture_" + str(tex_count), width, height, raw_image, noesis.NOESISTEX_RGBA32)
+				tex_list.append(tex)
+
+			elif tex_fmt == 0x14:
 
 				if x360 == 1:
 					raw_image = rapi.swapEndianArray(raw_image, 2)
@@ -77,11 +85,14 @@ def bcLoadModel(data, mdlList):
 			elif tex_fmt == 6:
 
 				if x360 == 1:
+					raw_image = rapi.swapEndianArray(raw_image, 4)
 					raw_image = rapi.imageUntile360Raw(raw_image, width, height, 4)
+					raw_image = rapi.imageSwapChannelRGBA32(raw_image, 0, 2)
 
 				raw_image = rapi.imageFlipRGBA32(raw_image, width, height, 0, 1)
 				tex = NoeTexture("Texture_" + str(tex_count), width, height, raw_image, noesis.NOESISTEX_RGBA32)
 				tex_list.append(tex)
+
 			else:
 				print("Unknown texture format: ", tex_fmt)
 
@@ -99,5 +110,3 @@ def bcLoadModel(data, mdlList):
 
 
 	return 1
-
-
