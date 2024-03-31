@@ -1,9 +1,9 @@
 # Fancy Pants Adventures (PS3 / Android / X360)
 # Texture Viewer
-# Noesis script by DKDave, 2023 (last updated 25 March 2024)
+# Noesis script by DKDave, 2023 (last updated 31 March 2024)
 
-# Note: some .tex files seem to have incorrect dimensions stored in the file and don't display correctly
 # XBox360 textures use the same texture types, but are tiled, so change the x360 = 0 to x360 = 1 if you want to extract those
+# Update 29 March: Fixed dimension issues
 
 
 from inc_noesis import *
@@ -30,7 +30,7 @@ def bcLoadModel(data, mdlList):
 	if check == 0x52535243:
 		bs = NoeBitStream(data, NOE_BIGENDIAN)
 
-	x360 = 1										# 0 = for PS3/Android, 1 = XBox360
+	x360 = 0										# 0 = for PS3/Android, 1 = XBox360
 
 	tex_list = []
 
@@ -53,6 +53,7 @@ def bcLoadModel(data, mdlList):
 			width = bs.readUInt()
 			height = bs.readUInt()
 			bs.seek(offset + 0x44)
+
 			tex_data_size = bs.readUInt()
 			bs.seek(offset + 0x60)
 			raw_image = bs.readBytes(tex_data_size)
@@ -66,6 +67,11 @@ def bcLoadModel(data, mdlList):
 				tex_list.append(tex)
 
 			elif tex_fmt == 0x14:
+				if width %16 > 0:
+					width += 16 - (width %16)
+
+				if height %16 > 0:
+					height += 16 - (height %16)
 
 				if x360 == 1:
 					raw_image = rapi.swapEndianArray(raw_image, 2)
@@ -83,6 +89,11 @@ def bcLoadModel(data, mdlList):
 				tex_list.append(tex)
 
 			elif tex_fmt == 6:
+				if width %4 > 0:
+					width += 4 - (width %4)
+
+				if height %4 > 0:
+					height += 4 - (height %4)
 
 				if x360 == 1:
 					raw_image = rapi.swapEndianArray(raw_image, 4)
