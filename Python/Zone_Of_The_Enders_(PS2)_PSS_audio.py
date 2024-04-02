@@ -45,6 +45,10 @@ def read_file(filename, out_folder):
 
 		offset += chunk_size + 6
 
+	if len(audio) == 0:
+		print("No audio in " + filename)
+		return
+
 	size = len(audio) - 0x800
 	rate, channels = struct.unpack_from(">HB", audio, 6)
 	ss2_header = struct.pack("<4sIIIIIII4sI", b"SShd", 0x18, 2, rate, channels, 0x800, 0xFFFFFFFF, 0xFFFFFFFF, b"SSbd", size)
