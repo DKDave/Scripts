@@ -1,0 +1,28 @@
+# ================================================================================
+# Glass Rose (PS2)
+# FIF / FPK archive extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+# Use this script on the FIF file
+
+
+Open FDDE "FPK" 1
+
+Get FILES asize
+Math FILES / 0x18
+
+For A = 0
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+
+	If FILENAME = ""
+		Break
+	Endif
+
+	Log FILENAME OFFSET SIZE 1
+
+Next A
+
