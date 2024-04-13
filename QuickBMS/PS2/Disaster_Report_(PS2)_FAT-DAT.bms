@@ -1,0 +1,29 @@
+# ================================================================================
+# Disaster Report (PS2)
+# FAT/DAT extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+IDString "FAT "
+
+Open FDDE "DAT" 1
+
+Get FILES Long
+Math ENTRY = 0x100
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Get NAME_OFF Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x10
+Next A
+
+
