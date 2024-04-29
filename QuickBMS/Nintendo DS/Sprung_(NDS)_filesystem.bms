@@ -1,0 +1,27 @@
+# ================================================================================
+# Sprung (NDS)
+# filesystem.bin extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Endian Big
+
+Goto 2
+Get FILES Short
+Math OFFSET = 4
+
+For A = 0 < FILES
+	Goto OFFSET
+	Padding 4
+	Get FILENAME String
+	Padding 4
+	Get SIZE Long
+	Get MISC1 Long						# Could be compression flag, but always 0
+	SavePos OFFSET
+
+	Log FILENAME OFFSET SIZE
+
+	Math OFFSET + SIZE
+Next A
+
