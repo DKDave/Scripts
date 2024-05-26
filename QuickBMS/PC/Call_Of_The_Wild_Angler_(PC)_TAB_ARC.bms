@@ -1,0 +1,65 @@
+# ================================================================================
+# Call Of The Wild: The Angler
+# TAB / ARC extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+QuickBMSVer -64
+
+ComType zlib
+
+IDString "TAB\x00"
+Get TEMPNAME basename
+
+Open FDDE "arc" 1
+
+Goto 0x0c
+Get COUNT2 Long
+Get COUNT1 Long
+XMath ENTRY "(COUNT1 * 8) + 0x20"
+
+For A = 0 < COUNT2
+	Goto ENTRY
+	Get HASH LongLong
+	Get OFFSET Long
+	Get ZSIZE Long
+	Get SIZE Long
+	Get START_IDX Short
+	Get MISC1 Short
+
+	String FILENAME P "%HASH|x%"
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET SIZE 1
+	Else
+		If START_IDX = 0							# Single compressed block
+			CLog FILENAME OFFSET ZSIZE SIZE 1
+		Else								# Multiple compressed blocks
+			Log MEMORY_FILE 0 0
+			XMath IDX_OFF "(START_IDX * 8) + 0x20"
+			Goto IDX_OFF
+
+			For B = 0
+				Get ZSIZE2 Long
+				Get SIZE2 Long
+
+				Append
+				CLog MEMORY_FILE OFFSET ZSIZE2 SIZE2 1
+				Append
+
+				Math OFFSET + ZSIZE2
+				Get MEM_SIZE asize -1
+
+				If MEM_SIZE = SIZE
+					Log FILENAME 0 MEM_SIZE -1
+					Break
+				Endif
+			Next B
+
+		Endif
+	Endif
+
+	Math ENTRY + 0x18
+Next A
+
