@@ -7,8 +7,6 @@
 
 QuickBMSVer -64
 
-ComType zlib
-
 IDString "TAB\x00"
 Get TEMPNAME basename
 
@@ -30,13 +28,16 @@ For A = 0 < COUNT2
 
 	String FILENAME P "%HASH|x%"
 
-	If ZSIZE = SIZE
-		Log FILENAME OFFSET SIZE 1
+	Log MEMORY_FILE 0 0
+
+	ComType zlib
+
+	If ZSIZE = SIZE								# Not compressed
+		Log MEMORY_FILE OFFSET SIZE 1
 	Else
 		If START_IDX = 0							# Single compressed block
-			CLog FILENAME OFFSET ZSIZE SIZE 1
+			CLog MEMORY_FILE OFFSET ZSIZE SIZE 1
 		Else								# Multiple compressed blocks
-			Log MEMORY_FILE 0 0
 			XMath IDX_OFF "(START_IDX * 8) + 0x20"
 			Goto IDX_OFF
 
@@ -52,12 +53,25 @@ For A = 0 < COUNT2
 				Get MEM_SIZE asize -1
 
 				If MEM_SIZE = SIZE
-					Log FILENAME 0 MEM_SIZE -1
 					Break
 				Endif
 			Next B
 
 		Endif
+	Endif
+
+	Goto 0 -1
+	GetDString TYPE 4 -1
+	Get MEM_SIZE asize -1
+
+	If TYPE = "AAF"								# More compressed data
+		ComType deflate
+		Goto 0x30 -1
+		Get ZSIZE3 Long -1
+		Get SIZE3 Long -1
+		CLog FILENAME 0x40 ZSIZE3 SIZE3 -1
+	Else
+		Log FILENAME 0 MEM_SIZE -1
 	Endif
 
 	Math ENTRY + 0x18
