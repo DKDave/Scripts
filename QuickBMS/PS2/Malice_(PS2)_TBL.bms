@@ -1,0 +1,42 @@
+# ================================================================================
+# Malice (PS2)
+# TBL/LTP extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+# Note: Use this script on the PACK.TBL file
+
+
+Open FDSE "PACK0.LTP" 1
+Open FDSE "PACK1.LTP" 2
+
+Goto 4
+Get FILES Long
+Math ENTRY = 8
+XMath NAMES "ENTRY + (FILES * 0x0c)"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get OFFSET Long
+	Get SIZE Long
+	Math OFFSET * 0x800
+
+	If OFFSET >= 0x3f43e800
+		Math ARC = 2
+		Math OFFSET - 0x3f43e800
+	Else
+		Math ARC = 1
+	Endif
+
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	If SIZE > 0
+		Log FILENAME OFFSET SIZE ARC
+	Endif
+
+	Math ENTRY + 0x0c
+Next A
+
