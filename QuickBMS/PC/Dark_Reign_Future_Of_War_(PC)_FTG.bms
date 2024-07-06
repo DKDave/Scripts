@@ -1,0 +1,19 @@
+# Dark Reign: The Future Of War (PC, 1997)
+# FTG audio archive extract
+# QuickBMS script by DKDave, 2024
+
+
+IDString "BOTG"
+
+Get ENTRY Long
+Get FILES Long
+Goto ENTRY
+
+For A = 0 < FILES
+	GetDString FILENAME 0x1c
+	Get OFFSET Long
+	Get SIZE Long
+	Log FILENAME OFFSET SIZE
+Next A
+
+
