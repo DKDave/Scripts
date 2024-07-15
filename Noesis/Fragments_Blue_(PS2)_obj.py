@@ -54,6 +54,7 @@ def bcLoadModel(data, mdlList):
 		raw_image += dec_lzss(comp_data, part_size - 4, size)
 
 	final_image = rapi.imageDecodeRawPal(raw_image, pal, width, height, 8, "r8g8b8a8", noesis.DECODEFLAG_PS2SHIFT)
+	final_image = rapi.imageScaleRGBA32(final_image, (1, 1, 1, 2), width, height)
 
 	tex1 = NoeTexture(curr_file, width, height, final_image, noesis.NOESISTEX_RGBA32)
 	tex_list.append(tex1)
