@@ -1,0 +1,34 @@
+# Endless Ocean Luminous (Switch)
+# .bea extract
+# QuickBMS script by DKDave, 2024
+
+
+ComType ZSTD
+
+IDString "SCNE"
+
+Goto 0x20
+Get FILES LongLong
+Goto 0x30
+Get TABLE1 LongLong
+
+For A = 0 < FILES
+	Goto TABLE1
+	Get ASST_OFFSET LongLong
+
+	Goto ASST_OFFSET
+	Goto 0x14 0 SEEK_CUR
+	Get ZSIZE Long
+	Get SIZE Long
+	Goto 0x0c 0 SEEK_CUR
+	Get OFFSET LongLong
+	Get NAME_OFF LongLong
+	Goto NAME_OFF
+	Get LEN Short
+	GetDString FILENAME LEN
+
+	CLog FILENAME OFFSET ZSIZE SIZE
+
+	Math TABLE1 + 8
+Next A
+
