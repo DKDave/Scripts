@@ -1,0 +1,26 @@
+# ================================================================================
+# The Outforce (PC, 2001)
+# .BOX extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Goto -4
+Get ENTRY Long
+
+Goto ENTRY
+Get FILES Long
+
+For A = 0 < FILES
+	Get FILENAME String
+	Get OFFSET Long
+	Get SIZE Long
+	Log FILENAME OFFSET SIZE
+Next A
+
+
+
+
+
+
+
