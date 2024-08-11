@@ -1,0 +1,34 @@
+# ================================================================================
+# Earth 2150: Escape From The Blue Planet (PC)
+# .WD archive extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Goto -4
+Get TEMP Long
+Get OFFSET asize
+Math OFFSET - TEMP
+XMath ZSIZE "TEMP - 4"
+
+CLog MEMORY_FILE OFFSET ZSIZE 0x100000
+
+Goto 8 -1
+Get FILES Short -1
+
+For A = 0 < FILES
+	Get LEN Byte -1
+	GetDString FILENAME LEN -1
+	Get MISC1 Byte -1
+	Get OFFSET Long -1
+	Get ZSIZE Long -1
+	Get SIZE Long -1	
+
+	If ZSIZE = SIZE
+		Log FILENAME OFFSET ZSIZE
+	Else
+		CLog FILENAME OFFSET ZSIZE SIZE
+	Endif
+
+Next A
+
