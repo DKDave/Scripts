@@ -1,0 +1,32 @@
+# ================================================================================
+# Siren: Blood Curse (PS3)
+# HED/DAT extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Endian Big
+
+Open FDDE "dat" 1
+
+Goto 0x10
+Get NAMES Long
+Get ENTRY Long
+Get UNK1 Long
+Get FILES Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE 1
+
+	Math ENTRY + 0x10
+Next A
+
