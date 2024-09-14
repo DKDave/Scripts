@@ -1,0 +1,37 @@
+# ================================================================================
+# Firefighter FD 18 (PS2)
+# AUDIO.BIN extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+IDString "TYOSD v-1.28"
+
+Get TEMPNAME basename
+Get FILES Long
+Math ENTRY = 0x10
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x800
+	Get SIZE Long
+	Goto OFFSET
+	GetDString TYPE 4
+
+	If TYPE = "Svag"
+		String EXT l "svag"
+	Elif TYPE = "SdDt"
+		String EXT l "sddt"
+	Elif TYPE = "IECS"
+		String EXT l "hd"
+	Else
+		String EXT l "bd"
+	Endif
+
+	String FILENAME P "%TEMPNAME%_%A%.%EXT%"
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 8
+Next A
