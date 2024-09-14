@@ -8,7 +8,7 @@ Many more scripts will be added once checked for accuracy.
 
 NOTE: These scripts are all my own work based on my own reverse engineering.  You may not distribute these tools for profit in any way, and all credit to me must be given if redistributed/re-used in your own projects.
 
-NOTE 2: The latest version of QuickBMS (0.12) doesn't appear to work correctly when generating filenames, so please use an earlier version (0.11 works fine).
+NOTE 2: The latest version of QuickBMS (0.12) may not work correctly with some scripts due to differences in string handling.
 
 
 Dave
