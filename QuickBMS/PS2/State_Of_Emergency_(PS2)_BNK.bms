@@ -1,0 +1,22 @@
+# ================================================================================
+# State Of Emergency (PS2)
+# BNK audio extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+Get FILES Long
+Get BNK_SIZE Long
+Get TEMPNAME basename
+
+For A = 0 < FILES
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+
+	String FILENAME P "%TEMPNAME%_%A%.vag"
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
