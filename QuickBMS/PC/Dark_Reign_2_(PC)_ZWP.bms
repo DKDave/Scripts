@@ -1,0 +1,42 @@
+# ================================================================================
+# Dark Reign 2 (PC, 2000)
+# ZWP archive extract
+# QuickBMS script by DKDave, 2024
+# ================================================================================
+
+
+IDString "NORK"
+
+Goto 8
+GET DIRS Long
+Get DIR_ENTRY Long
+Get FILES Long
+Get ENTRY Long
+
+Goto DIR_ENTRY
+
+For A = 0 < DIRS
+	Get LEN Byte
+	GetDString DIR_NAME LEN
+	PutArray 0 A DIR_NAME
+Next A
+
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get DIR_IDX Long
+	Get LEN Byte
+	GetDString FILENAME LEN
+	Get OFFSET Long
+	Get SIZE Long
+	Math DIR_IDX - 1
+
+	GetArray DIR_NAME 0 DIR_IDX
+	String FILENAME P "%DIR_NAME%\%FILENAME%"
+
+	Log FILENAME OFFSET SIZE
+
+	SavePos ENTRY
+
+Next A
+
