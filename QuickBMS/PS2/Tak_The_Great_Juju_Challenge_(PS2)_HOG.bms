@@ -1,0 +1,26 @@
+# ================================================================================
+# Tak: The Great Juju Challenge (PS2)
+# HOG archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+Goto 0x0c
+Get ENTRY Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get OFFSET Long
+	Get SIZE Long
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 12
+Next A
+
+
