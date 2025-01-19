@@ -1,0 +1,27 @@
+# ================================================================================
+# Lord of The Rings: The Fellowship Of The Ring (XBox)
+# XPA audio extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+
+Math ENTRY = 0x18
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x20
+	Goto 0xe4 0 SEEK_CUR
+	Get SIZE Long
+	Get OFFSET Long
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x118
+Next A
+
+
+
+
