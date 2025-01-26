@@ -1,0 +1,68 @@
+# ================================================================================
+# Sonic Unleashed (Wii)
+# .DAT (GCAX) audio extract
+# QuickBMS script by DKDave, 2020 (revised 2025)
+# ================================================================================
+
+# Should also work for other games that use the same audio archive format, such as Sonic and the Secret Rings
+# Files are extracted as playable .DSP files
+
+
+IDString "gcax"
+
+Endian Big
+
+Get TEMPNAME basename
+
+Goto 0x1c
+Get DATA_START Long
+
+Goto 0xb8
+Get FILE_TABLE Long
+
+Goto FILE_TABLE
+Get FILES Long
+Math FILES + 1
+
+SavePos ENTRY
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET + DATA_START
+	Get JUNK Long
+	Get NIB_COUNT Long
+	SavePos COEFF_START
+	GetDString JUNK 0x30
+	Get RATE Short
+	Get JUNK Short
+	Get SIZE Long
+
+	Log MEMORY_FILE 0x1b 0 Byte
+	XMath SAMP_COUNT "(SIZE / 8) * 0x0e"
+
+	PutVarChr MEMORY_FILE 0 SAMP_COUNT Long
+	PutVarChr MEMORY_FILE 4 NIB_COUNT Long
+	PutVarChr MEMORY_FILE 8 RATE Long
+
+	PutVarChr MEMORY_FILE 0x1b 0 Byte
+
+	Append
+	Log MEMORY_FILE COEFF_START 0x20
+	Append
+
+	PutVarChr MEMORY_FILE 0x5f 0 Byte
+
+	Append
+	Log MEMORY_FILE OFFSET SIZE
+	Append
+
+	String FILENAME P "%TEMPNAME%_%A%_l.dsp"
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x44
+Next A
+
+
