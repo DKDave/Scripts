@@ -1,0 +1,31 @@
+# ================================================================================
+# Roadkill (PS2)
+# POD archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+IDString "POD3"
+
+Goto 0x58
+Get FILES Long
+Goto 0x108
+Get ENTRY Long
+XMath NAMES "ENTRY + (FILES * 0x14)"
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get NAME_OFF Long
+	Get SIZE Long
+	Get OFFSET Long
+	Get UNK1 LongLong
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x14
+Next A
+
+
