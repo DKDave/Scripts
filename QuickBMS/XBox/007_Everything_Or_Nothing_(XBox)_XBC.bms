@@ -1,0 +1,56 @@
+# ================================================================================
+# 007: Everything Or Nothing (XBox)
+# XBC archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+ComType DK2
+
+Goto 0xc
+Get SECTIONS Long
+Math SEC_ENTRY = 0x18
+Math OFFSET = 0x800
+
+For A = 0 < SECTIONS
+	Goto SEC_ENTRY
+	Get DIR_ENTRY Long
+	Get DIR_COUNT Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get MISC1 Long
+	Get MISC2 Short
+	Get COMP Short						# 1024 = compressed
+
+	If COMP = 0
+		Log MEMORY_FILE OFFSET ZSIZE
+	Else
+		CLog MEMORY_FILE OFFSET ZSIZE SIZE
+	Endif
+
+	Math OFFSET2 = 0
+
+	For B = 0 < DIR_COUNT
+		Goto DIR_ENTRY
+		GetDString FILENAME 8
+		Get JUNK Float
+		Get ENTRY_SIZE Long
+		Get ENTRY_OFF Long
+		Get ENTRY_ACTUAL_SIZE Long
+
+		Log FILENAME OFFSET2 ENTRY_SIZE -1
+
+		Math OFFSET2 + ENTRY_ACTUAL_SIZE
+		Math DIR_ENTRY + 0x18
+	Next B
+
+	Math OFFSET + ZSIZE
+	Goto OFFSET
+	Padding 0x800
+	SavePos OFFSET
+
+	Math SEC_ENTRY + 0x18
+Next A
+
+
+
