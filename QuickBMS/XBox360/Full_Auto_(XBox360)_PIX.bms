@@ -1,0 +1,42 @@
+# ================================================================================
+# Full Auto (XBox 360, 2006)
+# .PIX archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Math OFFSET = 0
+
+For A = 0
+	Goto OFFSET
+	Get ZSIZE Long
+	Get SIZE Long
+
+	If ZSIZE = 0
+		Break
+	Endif
+
+	Padding 0x800
+	SavePos OFFSET
+
+	CLog MEMORY_FILE OFFSET ZSIZE SIZE
+
+	Goto 0 -1
+	Get FILES Long -1
+
+# Process uncompressed data in memory file
+
+	For B = 0 < FILES
+		Get SIZE Long -1
+		Get FILENAME String -1
+		SavePos OFFSET2 -1
+
+		Log FILENAME OFFSET2 SIZE -1
+
+		Goto SIZE -1 SEEK_CUR
+	Next B
+
+	Math OFFSET + ZSIZE
+
+Next A
+
