@@ -46,7 +46,7 @@ for a in range(479):
 	vd.seek(offset)
 	audio = vd.read(size)
 
-	wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 8, b"WAVEfmt ", 0x10, 1, 1, 22050, 44100, 2, 16, b"data", len(audio))	
+	wav_header = struct.pack("<4sI8sIHHIIHH4sI", b"RIFF", len(audio) + 0x24, b"WAVEfmt ", 0x10, 1, 1, 22050, 44100, 2, 16, b"data", len(audio))	
 
 	out_file = out_folder + "\loksr_voice_" + str(a) + ".wav"
 
