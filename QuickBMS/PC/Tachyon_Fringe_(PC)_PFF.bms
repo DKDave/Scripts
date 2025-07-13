@@ -1,0 +1,31 @@
+# ================================================================================
+# Tachyon: The Fringe (PC, 2001)
+# TACHYON.PFF extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Goto 4
+IDString "PFF3"
+
+Get FILES Long
+Get ENTRY_SIZE Long
+Get ENTRY Long
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC2 Long
+	GetDString FILENAME 0x10
+	Get MISC3 Long
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + ENTRY_SIZE
+Next A
+
+
+
+
