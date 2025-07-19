@@ -1,0 +1,37 @@
+# ================================================================================
+# Cardinal Syn (PS1)
+# WAD archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Get FOLDERS Long
+Math F_ENTRY = 4
+
+For F = 0 < FOLDERS
+	Goto F_ENTRY
+	GetDString FLDR_NAME 0x14
+	Get FLDR_START Long
+	Get MISC1 Long
+
+	Goto FLDR_START
+	Get ENTRY Long
+	Get FILES Long
+
+	For A = 0 < FILES
+		Goto ENTRY
+		GetDString FILENAME 0x14
+		Get OFFSET Long
+		Get UNK1 Long						# File type ?
+		Get ZSIZE Long
+		Get SIZE Long
+
+		String FILENAME P "%FLDR_NAME%\%FILENAME%"
+		Log FILENAME OFFSET SIZE
+
+		Math ENTRY + 0x24
+	Next A
+
+	Math F_ENTRY + 0x1c
+Next F
+
