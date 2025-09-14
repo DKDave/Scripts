@@ -1,0 +1,42 @@
+# ================================================================================
+# Hikaru No Go - Heian Gensou Ibunroku (PS1)
+# R2 archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+ComType BPE
+
+Goto 4
+Get FILES Long
+
+Math ENTRY = 0x20
+XMath TABLE_END "(FILES * 0x20) + 0x20"
+Goto TABLE_END
+Padding 0x800
+SavePos DATA_START
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x10
+	Get OFFSET Long
+	Get SIZE Long	
+	Math OFFSET * 0x800
+	Math OFFSET + DATA_START
+	Math SIZE * 0x800
+	Goto OFFSET
+	GetDString TYPE 4
+
+	If TYPE <> "TEN2"
+		Log FILENAME OFFSET SIZE
+	Else
+		Get ZSIZE Long
+		Get SIZE2 Long
+		SavePos OFFSET2
+		CLog FILENAME OFFSET2 ZSIZE SIZE2
+	Endif
+
+	Math ENTRY + 0x20
+Next A
+
+
