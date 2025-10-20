@@ -2,9 +2,10 @@
 # Emergency: Fighters For Life (1998)
 # CFF / VFF / AFF image decompression
 # Python script by DKDave, 2025
+# Last updated: 20 October 2025
 # ================================================================================
 
-# This script will read all of the CFF/VFF/AFF compressed image files and output .bmp files
+# This script will read all of the CFF/VFF/AFF compressed image files and output RGB .bmp files
 # For VFF and AFF files, a suitable palette file will be loaded - either one with the same name as the base file, or farben.pal
 # Usage: Python em.py [CFF/VFF/AFF file]
 
@@ -56,25 +57,24 @@ def dec(comp, dec_size):
 
 
 # Create bmp file
-# Converts 8-bit image to RGBA32
+# Converts 8-bit image to 24-bit RGB
 
 def create_bmp(image, pal, width, height):
-	row_size = ((width * 4) + 3) & 0xfffffffc						# account for row padding if required
+	row_size = ((width * 3) + 3) & 0xfffffffc						# account for row padding if required
 
-	bmp_header = struct.pack("<2sIHHIIIiHHIIIIII", b"BM", (row_size * height) + 54, 0, 0, 0, 40, width, -height, 1, 32, 0, width * height * 4, 1, 1, 0, 0)
+	bmp_header = struct.pack("<2sIHHIIiiHHIIiiII", b"BM", (row_size * height) + 54, 0, 0, 0x36, 40, width, -height, 1, 24, 0, row_size * height, 96, 96, 0, 0)
 
 	bmp_data = bytearray(row_size * height)
 
 	for a in range(height):
 		for b in range(width):
 			idx = image[(a * width) + b]					# colour index
-			pos = (a * row_size) + (b * 4)					# pixel position in final bitmap data
+			pos = (a * row_size) + (b * 3)					# pixel position in final bitmap data
 
 			col = pal[idx * 3: (idx * 3) + 3]					# Read colour value from palette
 			bmp_data[pos + 2] = col[0]					# Add colours to final bitmap data
 			bmp_data[pos + 1] = col[1]
 			bmp_data[pos + 0] = col[2]
-			bmp_data[pos + 3] = 0xff					# No alpha
 
 	return bmp_header + bmp_data
 
@@ -128,17 +128,25 @@ if file_ext == ".cff":
 
 
 if file_ext == ".vff":
+	vff_type = struct.unpack_from("<B", data, 0)[0]					# 2 = multiple images all of same size, 3 = multiple images of various sizes
+	count = struct.unpack_from("<H", data, 1)[0]
+
+	print("File:\t" + in_file, "\t", str(count) + " images")
+
 	if os.path.exists(filename + ".vfp"):
+		print("Using palette: " + filename + ".vfp\n")
 		p = open(filename + ".vfp", "rb")
 		pal = bytearray(p.read())
 		p.close()
 
 	elif os.path.exists(filename + ".pal"):
+		print("Using palette: " + filename + ".pal\n")
 		p = open(filename + ".pal", "rb")
 		pal = bytearray(p.read())
 		p.close()
 
 	elif os.path.exists("farben.pal"):
+		print("Using palette: " + "farben.pal\n")
 		p = open("farben.pal", "rb")
 		pal = bytearray(p.read())
 		p.close()
@@ -150,11 +158,6 @@ if file_ext == ".vff":
 
 	for a in range(0x300):
 		pal[a] = pal[a] * 4
-
-	vff_type = struct.unpack_from("<B", data, 0)[0]					# 2 = multiple images all of same size, 3 = multiple images of various sizes
-	count = struct.unpack_from("<H", data, 1)[0]
-
-	print("File:\t" + in_file, "\t", str(count) + " images\n")
 
 	if vff_type == 2:
 		width = struct.unpack_from("<H", data, 3)[0]
@@ -202,17 +205,23 @@ if file_ext == ".vff":
 
 
 if file_ext == ".aff":
+	count = struct.unpack_from("<H", data, 0)[0]
+	print("File:\t" + in_file, "\t", str(count) + " images")
+
 	if os.path.exists(filename + ".vfp"):
+		print("Using palette: " + filename + ".vfp\n")
 		p = open(filename + ".vfp", "rb")
 		pal = bytearray(p.read())
 		p.close()
 
 	elif os.path.exists(filename + ".pal"):
+		print("Using palette: " + filename + ".pal\n")
 		p = open(filename + ".pal", "rb")
 		pal = bytearray(p.read())
 		p.close()
 
 	elif os.path.exists("farben.pal"):
+		print("Using palette: " + "farben.pal\n")
 		p = open("farben.pal", "rb")
 		pal = bytearray(p.read())
 		p.close()
@@ -224,11 +233,7 @@ if file_ext == ".aff":
 	for a in range(0x300):
 		pal[a] = pal[a] * 4
 
-	count = struct.unpack_from("<H", data, 0)[0]
-
 	offset = (count * 0x0e) + 2
-
-	print("File:\t" + in_file, "\t", str(count) + " images\n")
 
 	print(f"{'No.':<10}{'Width':<15}{'Height':<15}{'BMP Size':<20}")
 	print("--------------------------------------------------------------------------------")
