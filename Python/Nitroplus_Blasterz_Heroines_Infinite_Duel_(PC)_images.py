@@ -83,21 +83,24 @@ if not os.path.exists(in_file):
 
 f = open(in_file, "rb")
 
+codec_names = {0x29: "8-bit + palette", 0x35545844: "DXT5"}
+
 f.seek(0)
 width = int.from_bytes(f.read(4), "little")									# Width for all images in archive
 height = int.from_bytes(f.read(4), "little")									# Height for all images in archive
-unk1 = int.from_bytes(f.read(4), "little")									# ?
+codec = int.from_bytes(f.read(4), "little")									# 0x29, "DXT5", etc.
 unk2 = int.from_bytes(f.read(4), "little")									# ?
 files = int.from_bytes(f.read(4), "little")									# Number of images
 unk3 = int.from_bytes(f.read(4), "little")									# ?
 pal_data = (files * 12) + 0x18										# Start of palette data
 
 print("Archive:\t" + in_file)
-print("Images:\t\t" + str(files) + "\n")
+print("Images:\t\t" + str(files))
+print("Codec:\t\t" + codec_names[codec] + "\n")
 
-print("--------------------------------------------------------------------------------")
-print(f"{'#':<10}{'Offset':<15}{'Comp size':<15}{'Dec size':<15}{'Dimensions':<20}")
-print("--------------------------------------------------------------------------------\n")
+print("------------------------------------------------------------------------------------------")
+print(f"{'#':<10}{'Offset':<15}{'Comp size':<15}{'Dec size':<15}{'Dimensions':<20}{'Codec':<20}")
+print("------------------------------------------------------------------------------------------\n")
 
 entry = 0x18
 
@@ -107,25 +110,27 @@ for a in range(files):
 	comp_size = int.from_bytes(f.read(4), "little")
 	f.read(4)
 
-	f.seek(pal_data + (a * 1024))
-	pal = f.read(0x400)
-
 	f.seek(offset)
 	comp_data = f.read(comp_size)
 	dec_data = dec(comp_data, width, height)
 
-# BMP header is palette + 8-bit image data
+	if codec == 0x29:										# 8-bit + palette
+		f.seek(pal_data + (a * 1024))
+		pal = f.read(0x400)
+		bmp_header = struct.pack("<2sIHHIIiiHHIIiiII", b"BM", (width * height) + 1024 + 54, 0, 0, 0x36, 40, width, -height, 1, 8, 0, width * height, 96, 96, 0, 0)
 
-	bmp_header = struct.pack("<2sIHHIIiiHHIIiiII", b"BM", (width * height) + 1024 + 54, 0, 0, 0x36, 40, width, -height, 1, 8, 0, width * height, 96, 96, 0, 0)
+		z = open(in_file + "_" + str(a) + ".bmp", "wb")
+		z.write(bmp_header + pal + dec_data)
+		z.close()
 
-	z = open(in_file + "_" + str(a) + ".bmp", "wb")
-	z.write(bmp_header + pal + dec_data)
-	z.close()
+	elif codec == 0x35545844:									# DXT5
+		dds_header = struct.pack("<4sIIIIIII11III4sIIIIIIIIII", b"DDS ", 0x7c, 0x1007, height, width, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x20, 5, b"DXT5", 0, 0, 0, 0, 0, 0x1000, 0, 0, 0, 0)
 
-	print(f"{a:<10}{hex(offset):<15}{hex(comp_size):<15}{hex(len(dec_data)):<15}{str(width) + ' x ' + str(height):<20}")
+		z = open(in_file + "_" + str(a) + ".dds", "wb")
+		z.write(dds_header + dec_data)
+		z.close()
+
+	print(f"{a:<10}{hex(offset):<15}{hex(comp_size):<15}{hex(len(dec_data)):<15}{str(width) + ' x ' + str(height):<20}{codec_names[codec]:<20}")
 
 f.close()
-
-
-	
 
