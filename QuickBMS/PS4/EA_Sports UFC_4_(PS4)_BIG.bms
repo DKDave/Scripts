@@ -1,0 +1,84 @@
+# ================================================================================
+# EA Sports UFC 4 (PS4, 2020)
+# BIG file extract
+# QuickBMS script by DKDave 2025
+# ================================================================================
+
+
+ComType zstd
+
+Endian Big
+
+Goto 4
+Get FILES Long
+Get JUNK Long
+Get NAMES Long
+Get NAMES_SIZE Long
+XMath FNAMES "NAMES + (FILES * 0x3b)"
+Math ENTRY = 0x30
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Math OFFSET * 0x10
+	Get MISC2 Long
+	Get SIZE Long
+	Get MISC4 Long
+	Get MISC5 Long
+	Goto NAMES
+	Get F_IDX Short
+	GetDString FILENAME 0x39
+	XMath FN_OFF "FNAMES + (F_IDX * 0x49)"
+	Goto FN_OFF
+	GetDString FOLDER 0x49
+	String FILENAME p "%s\%s" FOLDER FILENAME
+
+	Goto OFFSET
+	Goto 0x0c 0 SEEK_CUR
+	Get DEC_SIZE Long
+	Get CHUNK_SIZE Long							# Max decompressed chunk size
+	Get CHUNKS Long
+	Goto 0x10 0 SEEK_CUR
+
+	Log MEMORY_FILE 0 0
+
+	For B = 0 < CHUNKS
+		Get ZSIZE Long
+		Get TYPE Long							# 4 = uncompressed chunk, 8 = ZSTD chunk
+		SavePos OFFSET2
+
+		Append
+
+		If TYPE = 8
+			CLog MEMORY_FILE OFFSET2 ZSIZE CHUNK_SIZE
+
+		Elif TYPE = 4
+			Log MEMORY_FILE OFFSET2 ZSIZE
+
+		Else
+			Print "Unknown chunk:	%TYPE%"
+		Endif
+
+		Append
+
+		Goto ZSIZE 0 SEEK_CUR
+		Padding 8
+		SavePos TEMP
+
+		XMath TEMP2 "TEMP % 0x10"
+
+		If TEMP2 = 0
+			Math TEMP + 8
+		Endif
+
+		Goto TEMP
+
+	Next B
+
+	Get MEM_SIZE asize -1
+	Log FILENAME 0 MEM_SIZE -1
+
+	Math ENTRY + 0x14
+	Math NAMES + 0x3b
+Next A
+
