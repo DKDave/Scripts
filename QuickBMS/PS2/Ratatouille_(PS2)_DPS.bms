@@ -1,0 +1,67 @@
+# ================================================================================
+# Ratatouille (PS2)
+# DPS archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+# Note: files are extracted without proper filenames - no file types seem to be stored to identify them
+
+
+ComType lzrs_asobo
+
+
+Get TEMPNAME basename
+
+Goto 0x104
+Get DIR_COUNT Long
+
+Math DIR_ENTRY = 0x120
+Math OFFSET = 0x800
+
+For A = 0 < DIR_COUNT
+	Goto DIR_ENTRY
+	Get FILES Long
+	Get SEC_SIZE1 Long							# Section size with padding
+	Get SEC_SIZE2 Long							# Actual data size of section
+	Get JUNK Long							# ?
+	Get SEC_HASH LongLong						# Some hash value ?
+
+
+# Process files in each section
+
+	Math OFFSET2 = OFFSET
+
+	For B = 0 < FILES
+		Goto OFFSET2
+		Get SIZE2 Long						# Total section size (from offset 0x18)
+		Get SIZE3 Long						# Some small data size (from offset 0x18)
+		Get SIZE Long						# Decompressed size (or actual size if not compressed)
+		Get ZSIZE Long						# 0 = not compressed, otherwise compressed size
+		Get HASH1 Long						# Some hash values ?
+		Get HASH2 Long
+		Goto SIZE3 0 SEEK_CUR					# Go to start of data
+
+		String FILENAME P "%TEMPNAME%_%A%_%B%"			# No filenames stored
+
+		If ZSIZE = 0						# Not compressed
+			SavePos OFFSET2
+			Log FILENAME OFFSET2 SIZE
+			Math OFFSET2 + SIZE
+
+		Else							# Compressed
+			Get SIZE Long
+			Get ZSIZE Long
+			Math ZSIZE - 8
+			SavePos OFFSET2
+			CLog FILENAME OFFSET2 ZSIZE SIZE
+			Math OFFSET2 + ZSIZE
+
+		Endif
+
+	Next B
+
+	Math DIR_ENTRY + 0x18
+	Math OFFSET + SEC_SIZE1
+
+Next A
+
