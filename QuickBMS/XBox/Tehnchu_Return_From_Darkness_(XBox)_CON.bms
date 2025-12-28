@@ -1,0 +1,46 @@
+# ================================================================================
+# Tenchu: Return From Darkness (XBox)
+# .con archive extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+String KEY = "\xbc\x90\x91\x91"					# File table key
+
+Goto 0x18
+
+Filexor KEY
+Get DATA_START Long
+Get FILES Long
+
+Math ENTRY = 0x20							# File sizes
+XMath ENTRY2 "ENTRY + (FILES * 4)"					# File offsets
+XMath NAMES "ENTRY + (FILES * 8)"					# Filenames
+
+For A = 0 < FILES
+	FileXor KEY
+	Goto ENTRY
+	Get SIZE Long
+	Goto ENTRY2
+	Get OFFSET Long
+	Goto NAMES
+	GetDString FILENAME 0x2c
+	FileXor 0
+
+	XMath TEMP "OFFSET + SIZE - 4"
+
+	Goto TEMP						# Crappy method to get file xor key
+	GetDString KEY2 4
+	String KEY2 0H KEY2
+
+	FileXor KEY2
+	Log FILENAME OFFSET SIZE
+	Filexor 0
+
+	Math ENTRY + 4
+	Math ENTRY2 + 4
+	Math NAMES + 0x2c
+
+Next A
+
+
