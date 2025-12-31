@@ -1,0 +1,32 @@
+# ================================================================================
+# D1: Professional Drift Grand Prix Series (PS2, 2005)
+# STREAM.BIN extract
+# QuickBMS script by DKDave, 2025
+# ================================================================================
+
+
+Get FILES Long
+Get NAMES Long
+Get NAMES_SIZE Long
+Math NAMES2 = NAMES
+
+Math FILES - 1
+Math ENTRY = 0x0c
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Goto NAMES2
+	Get NAME_OFF Long
+	Math NAME_OFF + NAMES
+	Goto NAME_OFF
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	Math NAMES2 + 4
+	Math ENTRY + 8
+Next A
+
+
