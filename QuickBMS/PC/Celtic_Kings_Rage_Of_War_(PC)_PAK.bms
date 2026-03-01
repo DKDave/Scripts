@@ -1,0 +1,45 @@
+# ================================================================================
+# Celtic Kings: Rage Of War (PC, 2002)
+# .pak file extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+IDString "HMMSYS PackFile"
+
+Goto 0x20
+Get FILES Long
+Get DIR_SIZE Long
+
+Math ENTRY = 0x28
+
+String FILENAME = ""
+
+Log MEMORY_FILE 0 0
+
+For A = 0 < FILES
+	Get LEN1 Byte						# Total filename length (including re-used part of previous filename)
+	Get LEN2 Byte						# Length of previous filename string to re-use for this one
+	XMath LEN3 "LEN1 - LEN2"					# Actual length of new string
+
+	If LEN2 > 0						# Re-use part of previous filename if needed
+		Goto 0 -1
+		PutDString FILENAME LEN2 -1
+		Goto 0 -1
+		GetDString PREV_NAME LEN2 -1 
+	Else
+		String PREV_NAME = ""
+	Endif
+
+	GetDString NEW_NAME LEN3
+	Get OFFSET Long
+	Get SIZE Long
+
+	String FILENAME = PREV_NAME
+	String FILENAME + NEW_NAME
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+
