@@ -1,0 +1,35 @@
+# ================================================================================
+# Hell: A Cyberpunk Thriller (PC, 1994)
+# .PL archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+Get FILES Short
+Get ENTRY Long
+Math DATA_END = ENTRY
+
+For A = 1 To FILES
+	Goto ENTRY
+	Get OFFSET Long
+	GetDString FILENAME 8
+
+	If A < FILES
+		Get OFFSET2 Long
+		XMath SIZE "OFFSET2 - OFFSET"
+	Else
+		XMath SIZE "DATA_END - OFFSET"
+	Endif
+
+	Goto OFFSET
+	GetDString CHECK 4
+
+	If CHECK = "RIFF"
+		String FILENAME + ".wav"
+	Endif
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 12
+Next A
+
