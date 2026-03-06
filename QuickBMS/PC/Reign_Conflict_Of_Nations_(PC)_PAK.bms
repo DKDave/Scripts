@@ -1,0 +1,22 @@
+# ================================================================================
+# Reign: Conflict Of Nations (PC, 2009)
+# PAK file extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+IDString "SMA"
+
+Get JUNK Short
+Get FILES Long
+Get DIR_SIZE Long
+
+For A = 0 < FILES
+	Get LEN Byte
+	GetDString FILENAME LEN
+	Get SIZE Long
+	Get ZSIZE Long
+	Get OFFSET Long
+	CLog FILENAME OFFSET ZSIZE SIZE
+Next A
+
