@@ -1,0 +1,34 @@
+# ================================================================================
+# Gore: Ultimate Soldier (PC, 2002)
+# .SS archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+IDString "BIGF"
+
+Get ENTRY2 Long
+Goto ENTRY2
+Get ENTRY Long
+
+For A = 0
+	If ENTRY = ENTRY2
+		Break
+	Endif
+
+	Goto ENTRY
+	Get OFFSET Long
+	Get SIZE Long
+	Get FILENAME String
+
+	Log FILENAME OFFSET SIZE
+
+	SavePos ENTRY
+Next A
+
+
+
+
+
+
+

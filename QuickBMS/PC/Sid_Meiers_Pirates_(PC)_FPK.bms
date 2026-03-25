@@ -1,0 +1,26 @@
+# ================================================================================
+# Sid Meier's Pirates! (PC, 2004)
+# .FPK archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+
+For A = 0 < FILES
+	Get LEN Long	
+	GetDString FILENAME LEN
+	Get JUNK LongLong
+	Padding 4
+
+	Get SIZE Long
+	Get OFFSET Long
+
+	String FILENAME m "#INPUT# -1"
+
+	Log FILENAME OFFSET SIZE
+
+Next A
+
+
