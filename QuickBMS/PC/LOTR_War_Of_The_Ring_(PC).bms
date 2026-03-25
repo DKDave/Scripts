@@ -1,0 +1,113 @@
+# ================================================================================
+# Lord Of The Rings: War Of The Ring (PC)
+# h2o archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+ComType blast
+
+IDString "LIQDLH2O"
+
+Get MISC1 Float
+GetCT TEXT String 0x1a
+
+Get VERSION Long
+Get FILES Long
+Goto 0x10 0 SEEK_CUR
+SavePos ENTRY
+
+XMath DIR_INFO_OFF "ENTRY + (FILES * 0x28)"
+
+
+# Decompress folder and filename data first
+
+Goto DIR_INFO_OFF
+Get ZSIZE Long
+Get SIZE Long
+Get JUNK Long
+SavePos OFFSET
+
+If ZSIZE = SIZE
+	Log MEMORY_FILE OFFSET ZSIZE
+Else
+	CLog MEMORY_FILE OFFSET ZSIZE SIZE
+Endif
+
+Goto ZSIZE 0 SEEK_CUR
+Get ZSIZE Long
+Get SIZE Long
+Get JUNK Long
+SavePos OFFSET
+CLog MEMORY_FILE2 OFFSET ZSIZE SIZE
+
+
+# Read folder and filenames into arrays
+
+Goto 0 -1
+Get DIR_COUNT Long -1
+
+If DIR_COUNT > 0
+	Get JUNK Long -1
+
+	For A = 0 < DIR_COUNT
+		Get DIR_NAME UNICODE -1
+		PutArray 0 A DIR_NAME
+	Next A
+Endif
+
+Goto 0 -2
+Get FILE_COUNT Long -2
+
+If FILE_COUNT > 0
+	Get JUNK Long -2
+
+	For A = 0 < FILE_COUNT
+		Get NAME UNICODE -2
+		PutArray 1 A NAME
+	Next A
+Endif
+
+
+# Read file table
+
+For A = 0 < FILES
+	Goto ENTRY
+	Get MISC1 Long
+	Get DIR_IDX Long							# DIR INDEX (or 0xffffffff for no folder name)
+	Get NAME_IDX Long						# FILENAME INDEX (0xffffffff = invalid file entry)
+	Get MISC4 Long
+	Get SIZE Long
+	Get ZSIZE Long
+	Get OFFSET Long
+	Get MISC5 Long
+	Get MISC6 Long
+	Get MISC7 Long
+
+	If DIR_INDEX <> 0xffffffff
+		GetArray DIR_NAME 0 DIR_IDX
+	Else
+		String DIR_NAME = ""
+	Endif
+
+	GetArray FNAME 1 NAME_IDX
+
+	String FILENAME P "%DIR_NAME%\%FNAME%"
+
+	If NAME_IDX <> 0xffffffff						# Valid file entries only
+		If ZSIZE = SIZE
+			Log FILENAME OFFSET ZSIZE
+		Else
+			Goto OFFSET
+			Get ZSIZE2 Long
+			Get SIZE2 Long
+			Get JUNK Long
+			SavePos OFFSET2
+			CLog FILENAME OFFSET2 ZSIZE2 SIZE2
+		Endif
+
+	Endif
+
+	Math ENTRY + 0x28
+Next A
+
