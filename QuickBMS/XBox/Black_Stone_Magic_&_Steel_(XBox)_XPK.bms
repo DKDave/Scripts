@@ -1,0 +1,27 @@
+# ================================================================================
+# Black Stone: Magic And Steel (XBox)
+# XPK archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+Goto -16
+IDString "XPAK1101"
+
+Get FILES Long
+Get XPK_SIZE asize
+
+XMath ENTRY "XPK_SIZE - 0x10 - (FILES * 0x10c)"
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x100
+	Get OFFSET Long
+	Get SIZE Long
+	Get MISC1 Long
+
+	Log FILENAME OFFSET SIZE
+
+	Math ENTRY + 0x10c
+Next A
+
