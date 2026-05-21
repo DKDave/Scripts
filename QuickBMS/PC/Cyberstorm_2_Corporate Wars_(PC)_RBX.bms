@@ -1,0 +1,43 @@
+# ================================================================================
+# Cyberstorm 2: Corporate Wars (PC, 1998)
+# RBX archive extract
+# QuickBMS script by DKDave, 2026
+# ================================================================================
+
+
+Goto 4
+Get FILES Long
+
+Math ENTRY = 0x0c
+
+For A = 0 < FILES
+	Goto ENTRY
+	GetDString FILENAME 0x0c
+	Get OFFSET Long
+	Goto OFFSET
+	Get ZSIZE Long
+	SavePos OFFSET2
+
+	Get CHECK Long
+
+	If CHECK = 0x3a584b50						# "PKX:"
+		Goto 8 0 SEEK_CUR
+		Get COMP_TYPE Long					# 0x101 (LZO1X) or 0x102 (LZO1Y)
+		Get ZSIZE Long
+		Get SIZE Long
+		SavePos OFFSET2
+
+		If COMP_TYPE = 0x102
+			ComType LZO1Y
+			CLog FILENAME OFFSET2 ZSIZE SIZE
+		Elif COMP_TYPE = 0x101
+			ComType LZO1X
+			CLog FILENAME OFFSET2 ZSIZE SIZE
+		Endif
+	Else
+		Log FILENAME OFFSET2 ZSIZE
+	Endif
+
+	Math ENTRY + 0x10
+Next A
+
